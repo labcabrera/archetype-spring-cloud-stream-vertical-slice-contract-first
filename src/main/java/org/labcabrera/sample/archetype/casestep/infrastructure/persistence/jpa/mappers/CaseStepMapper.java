@@ -4,9 +4,9 @@ import org.labcabrera.sample.archetype.casestep.domain.CaseStep;
 import org.labcabrera.sample.archetype.casestep.infrastructure.persistence.jpa.entities.CaseStepEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.labcabrera.sample.archetype.casefolder.infrastructure.persistence.jpa.mappers.CaseFolderMapper;
+import org.labcabrera.sample.archetype.casefolder.infrastructure.persistence.jpa.mappers.CaseFolderEntityMapper;
 
-@Mapper(componentModel = "spring", uses = { CaseFolderMapper.class })
+@Mapper(componentModel = "spring", uses = { CaseFolderEntityMapper.class })
 public interface CaseStepMapper {
 
     CaseStep toDomain(CaseStepEntity entity);

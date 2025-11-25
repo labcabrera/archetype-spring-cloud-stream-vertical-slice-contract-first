@@ -51,12 +51,15 @@ class GetCaseFoldersByRsqlQueryHandlerTest {
             "testuser",
             Set.of("case-folder-read"),
             Collections.emptySet());
-        caseFolder1 = CaseFolder.create(
-            "JOHN",
-            "DOE",
-            "SMITH",
-            new IdCard("12345678A", IdCardType.NIF),
-            "testuser");
+        var userInfo = org.labcabrera.sample.archetype.casefolder.domain.UserInfo.builder()
+            .id(null)
+            .name("JOHN")
+            .firstSurname("DOE")
+            .lastSurname(java.util.Optional.of("SMITH"))
+            .idCard(new IdCard("12345678A", IdCardType.NIF))
+            .build();
+
+        caseFolder1 = CaseFolder.create(userInfo, "testuser");
         pageable = PageRequest.of(0, 10);
     }
 
@@ -74,7 +77,7 @@ class GetCaseFoldersByRsqlQueryHandlerTest {
 
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
-        assertEquals("JOHN", result.getContent().get(0).getName());
+        assertEquals("JOHN", result.getContent().get(0).getUserInfo().getName());
         verify(securityPort).requireCurrentUser();
         verify(caseFolderRepository).findByRsql(rsql, pageable, authenticatedUser);
     }

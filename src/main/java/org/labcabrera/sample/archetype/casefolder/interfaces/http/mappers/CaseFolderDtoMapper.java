@@ -5,7 +5,7 @@ import org.mapstruct.Mapper;
 
 import com.labcabrera.sample.archetype.generated.model.CaseFolderDto;
 
-@Mapper(componentModel = "spring", uses = { IdCardDtoMapper.class })
+@Mapper(componentModel = "spring", uses = { UserInfoDtoMapper.class })
 public interface CaseFolderDtoMapper {
 
     CaseFolderDto toDto(CaseFolder domain);

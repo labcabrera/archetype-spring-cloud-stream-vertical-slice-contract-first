@@ -55,12 +55,15 @@ class GetCaseFolderByIdQueryHandlerTest {
             Set.of("case-folder-read"),
             Collections.emptySet());
 
-        caseFolder = CaseFolder.create(
-            "JOHN",
-            "DOE",
-            "SMITH",
-            new IdCard("12345678A", IdCardType.NIF),
-            "testuser");
+        var userInfo = org.labcabrera.sample.archetype.casefolder.domain.UserInfo.builder()
+            .id(null)
+            .name("JOHN")
+            .firstSurname("DOE")
+            .lastSurname(java.util.Optional.of("SMITH"))
+            .idCard(new IdCard("12345678A", IdCardType.NIF))
+            .build();
+
+        caseFolder = CaseFolder.create(userInfo, "testuser");
 
         query = new GetCaseFolderByIdQuery(caseFolder.getId());
     }
@@ -74,8 +77,8 @@ class GetCaseFolderByIdQueryHandlerTest {
 
         assertNotNull(result);
         assertEquals(caseFolder.getId(), result.getId());
-        assertEquals("JOHN", result.getName());
-        assertEquals("DOE", result.getFirstSurname());
+        assertEquals("JOHN", result.getUserInfo().getName());
+        assertEquals("DOE", result.getUserInfo().getFirstSurname());
         verify(securityPort).requireCurrentUser();
         verify(caseFolderRepository).findById(query.caseFolderId());
         verify(caseFolderGuard).checkRead(caseFolder, authenticatedUser);

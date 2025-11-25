@@ -42,8 +42,7 @@ public class DeleteCaseFolderCommandHandler implements CommandHandler<DeleteCase
     private void sendNotification(CaseFolder caseFolder) {
         var event = new CaseFolderDeletedEvent(
             caseFolder.getId(),
-            caseFolder.getIdCard().idCardType(),
-            caseFolder.getIdCard().idCardNumber());
+            caseFolder.getUserInfo());
         caseFolderEventBusPort.publish(event);
     }
 }
