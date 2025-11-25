@@ -290,6 +290,15 @@ Se ha utilizado la libreria link:https://github.com/jirutka/rsql-parser[rsql-par
 
 Se ha añadido el operador `=re=` para búsquedas "contiene" (like %value%) en strings.
 
+La implementación del visitor personalizado `CustomRsqlVisitor` realiza el mapeo de los nodos RSQL a especificaciones JPA y nos permite combinar
+búsqueda dentro de entidades relacionadas, por ejemplo:
+
+----
+userInfo.idCard.idCardNumber==50537477Z
+----
+
+Donde _userInfo_ está mapeado como un _@ManyToOne_ dentro de _CaseFolderEntity_ y _idCard_ es un _@Embedded_ dentro de _UserInfoEntity_.
+
 === CQRS
 
 Se ha adoptado un enfoque CQRS básico en la capa de aplicación, separando comandos (modificaciones de estado) y consultas (lecturas). Cada comando tiene su propio handler que encapsula la lógica de negocio asociada.
