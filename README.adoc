@@ -23,6 +23,8 @@ Pretende ser un punto de partida para microservicios que publican y consumen eve
 
 El prototipo incluye también una configuración de seguridad basada en OAuth2 Resource Server. Las llamadas a la API requieren de un token previamente emitido por un proveedor de identidad que será validado por la aplicación a través de la configuración JWT del IAM.
 
+TIP: En el caso de usar un enfoque _Code-First_ tenemos este mismo ejemplo en el siguiente link:https://github.com/labcabrera/archetype-spring-cloud-stream-vertical-slice[repositorio].
+
 == Tecnologías utilizadas
 
 - Spring Boot 3.x (Java 21)
