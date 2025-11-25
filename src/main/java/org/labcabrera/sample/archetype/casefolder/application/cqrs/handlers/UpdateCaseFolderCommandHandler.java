@@ -30,21 +30,23 @@ public class UpdateCaseFolderCommandHandler implements CommandHandler<UpdateCase
     private final CaseFolderMetricPort caseFolderMetricPort;
 
     public CaseFolder handle(UpdateCaseFolderCommand command) {
+        var caseFolderId = command.caseFolderId();
         var user = securityPort.requireCurrentUser();
-        log.info("Update case folder << {} (user: {})", command.caseFolderId(), user.username());
-        var existing = caseFolderRepository.findById(command.caseFolderId())
-            .orElseThrow(() -> new NotFoundException("case-folder.msg.not-found", command.caseFolderId(), CaseFolder.class));
+        log.info("Update case folder << {} (user: {})", caseFolderId, user.username());
+        var existing = caseFolderRepository.findById(caseFolderId)
+            .orElseThrow(() -> new NotFoundException("case-folder.msg.not-found", caseFolderId, CaseFolder.class));
         caseFolderGuard.checkWrite(existing, user);
         var update = CaseFolder.builder()
-            .id(command.caseFolderId())
+            .id(caseFolderId)
             .userInfo(UserInfo.builder()
                 .name(command.name())
                 .firstSurname(command.firstSurname())
                 .lastSurname(Optional.ofNullable(command.lastSurname()))
                 .idCard(command.idCard())
-                .build())
+                .build()
+                .normalize())
             .build();
-        var updated = caseFolderRepository.update(command.caseFolderId(), update);
+        var updated = caseFolderRepository.update(caseFolderId, update);
         sendNotification(updated);
         caseFolderMetricPort.incrementCaseFolderUpdatedCounter();
         return updated;

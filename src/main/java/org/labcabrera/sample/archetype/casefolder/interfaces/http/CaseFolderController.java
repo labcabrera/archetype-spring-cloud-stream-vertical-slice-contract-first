@@ -53,7 +53,7 @@ public class CaseFolderController implements CaseFoldersApi {
         var command = new CreateCaseFolderCommand(
             request.getName(),
             request.getFirstSurname(),
-            null,
+            request.getLastSurname(),
             IdCardType.valueOf(request.getIdCard().getType().getValue()),
             request.getIdCard().getNumber());
         CaseFolder caseFolder = commandBus.dispatch(command);

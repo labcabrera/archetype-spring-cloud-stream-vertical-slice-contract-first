@@ -10,15 +10,10 @@ import com.labcabrera.sample.archetype.generated.model.UserInfoDto;
 @Mapper(componentModel = "spring", uses = { IdCardDtoMapper.class })
 public interface UserInfoDtoMapper {
 
-    //@Mapping(source = "idCard", target = "idCard")
     UserInfoDto toDto(UserInfo domain);
 
     default String map(Optional<String> value) {
-        return value != null && value.isPresent() ? value.get() : null;
+        return value.isPresent() ? value.get() : null;
     }
-
-    // default Optional<String> map(String value) {
-    //     return Optional.ofNullable(value);
-    // }
 
 }

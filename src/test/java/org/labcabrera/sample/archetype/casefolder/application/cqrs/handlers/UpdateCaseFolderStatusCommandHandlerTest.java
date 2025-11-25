@@ -20,6 +20,7 @@ import org.labcabrera.sample.archetype.casefolder.application.ports.CaseFolderRe
 import org.labcabrera.sample.archetype.casefolder.domain.CaseFolder;
 import org.labcabrera.sample.archetype.casefolder.domain.IdCard;
 import org.labcabrera.sample.archetype.casefolder.domain.IdCardType;
+import org.labcabrera.sample.archetype.casefolder.domain.UserInfo;
 import org.labcabrera.sample.archetype.casefolder.domain.events.CaseFolderUpdatedEvent;
 import org.labcabrera.sample.archetype.shared.application.Guard;
 import org.labcabrera.sample.archetype.shared.application.SecurityPort;
@@ -61,16 +62,15 @@ class UpdateCaseFolderStatusCommandHandlerTest {
             "testuser",
             Set.of("case-folder-write"),
             Collections.emptySet());
-        var userInfo = org.labcabrera.sample.archetype.casefolder.domain.UserInfo.builder()
+        var userInfo = UserInfo.builder()
             .id(null)
             .name("JOHN")
             .firstSurname("DOE")
-            .lastSurname(java.util.Optional.of("SMITH"))
+            .lastSurname(Optional.of("SMITH"))
             .idCard(new IdCard("12345678A", IdCardType.NIF))
             .build();
-
         caseFolder = CaseFolder.create(userInfo, "testuser");
-        command = new UpdateCaseFolderCommand(caseFolder.getId(), null, "DOE-UPDATED", null, null);
+        command = new UpdateCaseFolderCommand(caseFolder.getId(), "JOHN-UPDATED", "DOE-UPDATED", "SMITH-UPDATED", null);
     }
 
     @Test

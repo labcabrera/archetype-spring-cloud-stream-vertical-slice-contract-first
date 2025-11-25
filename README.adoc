@@ -17,6 +17,8 @@ image:https://img.shields.io/badge/Kafka-3.4-green.svg[Kafka 3.4,link="https://k
 
 Este proyecto es un prototipo que muestra una aplicación Java Spring Boot diseñada siguiendo principios de Clean Architecture (hexagonal / ports & adapters) y usando Spring Cloud Stream para integración con Kafka en un enfoque "vertical slices" (cada módulo contiene sus capas: domain, application, infrastructure e interfaces).
 
+En este ejemplo se implementa una API rest usando el enfoque contract-first, definiendo los endpoints y modelos de datos a través de OpenAPI 3.0 dentro del fichero _/src/main/resources/api/openapi.yaml_ y se utiliza el plugin link:https://plugins.gradle.org/plugin/org.openapi.generator[org.openapi.generator] para generar los DTOs y controladores usando el _generatorName = "spring"_.
+
 Pretende ser un punto de partida para microservicios que publican y consumen eventos, usando JPA para la persistencia, CQRS para la integración de commands y queries. El prototipo está pensado para equipos de desarrollo que no estén familiarizados con conceptos de DDD o event sourcing tales como link:https://www.axoniq.io/framework[Axon] o link:https://eventuate.io/abouteventuatetram.html[Eventuate Tram] y se enfoquen en la implementación de la lógica de  negocio.
 
 El prototipo incluye también una configuración de seguridad basada en OAuth2 Resource Server. Las llamadas a la API requieren de un token previamente emitido por un proveedor de identidad que será validado por la aplicación a través de la configuración JWT del IAM.

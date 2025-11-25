@@ -2,11 +2,14 @@ package org.labcabrera.sample.archetype.casefolder.infrastructure.persistence.jp
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import java.lang.reflect.Field;
 import org.mapstruct.factory.Mappers;
 
 import org.labcabrera.sample.archetype.casefolder.domain.CaseFolder;
@@ -17,9 +20,30 @@ import org.labcabrera.sample.archetype.casefolder.infrastructure.persistence.jpa
 import org.labcabrera.sample.archetype.casefolder.infrastructure.persistence.jpa.entities.IdCardEntity;
 import org.labcabrera.sample.archetype.casefolder.infrastructure.persistence.jpa.entities.UserInfoEntity;
 
-public class CaseFolderEntityMapperTest {
+class CaseFolderEntityMapperTest {
 
     private final CaseFolderEntityMapper mapper = Mappers.getMapper(CaseFolderEntityMapper.class);
+
+    @BeforeEach
+    void setup() {
+        try {
+            UserInfoEntityMapper userInfoMapper = Mappers.getMapper(UserInfoEntityMapper.class);
+            try {
+                Field idCardField = userInfoMapper.getClass().getDeclaredField("idCardEntityMapper");
+                idCardField.setAccessible(true);
+                idCardField.set(userInfoMapper, Mappers.getMapper(IdCardEntityMapper.class));
+            }
+            catch (NoSuchFieldException ignore) {
+                // Ignore exception
+            }
+            Field f = mapper.getClass().getDeclaredField("userInfoEntityMapper");
+            f.setAccessible(true);
+            f.set(mapper, userInfoMapper);
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Test
     void testToDomain() {
@@ -63,7 +87,7 @@ public class CaseFolderEntityMapperTest {
 
         assertEquals(domain.getId(), entity.getId());
         assertEquals(domain.getUserInfo().getName(), entity.getUserInfo().getName());
-        assertTrue(entity.getUserInfo().getLastSurname() != null);
+        assertNotNull(entity.getUserInfo().getLastSurname());
         assertEquals(domain.getUserInfo().getLastSurname().orElse(null), entity.getUserInfo().getLastSurname());
     }
 }
