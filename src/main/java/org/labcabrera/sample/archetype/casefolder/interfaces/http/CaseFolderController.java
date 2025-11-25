@@ -82,7 +82,8 @@ public class CaseFolderController implements CaseFoldersApi {
             caseFolderId,
             request.getName(),
             request.getFirstSurname(),
-            request.getLastSurname());
+            request.getLastSurname(),
+            null);
         CaseFolder caseFolder = commandBus.dispatch(command);
         var caseFolderDto = mapper.toDto(caseFolder);
         return ResponseEntity.ok(caseFolderDto);

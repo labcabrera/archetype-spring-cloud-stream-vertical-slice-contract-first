@@ -5,7 +5,7 @@ import org.labcabrera.sample.archetype.casefolder.infrastructure.persistence.jpa
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = { IdCardMapper.class })
+@Mapper(componentModel = "spring", uses = { UserInfoMapper.class })
 public interface CaseFolderMapper {
 
     CaseFolder toDomain(CaseFolderEntity entity);

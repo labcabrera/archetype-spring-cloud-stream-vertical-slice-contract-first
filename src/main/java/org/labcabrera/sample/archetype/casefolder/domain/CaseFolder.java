@@ -24,15 +24,7 @@ public class CaseFolder {
     private CaseFolderStatus status;
 
     @NotNull
-    private String name;
-
-    @NotNull
-    private String firstSurname;
-
-    private String lastSurname;
-
-    @NotNull
-    private IdCard idCard;
+    private UserInfo userInfo;
 
     @NotNull
     private String owner;
@@ -42,27 +34,26 @@ public class CaseFolder {
 
     private LocalDateTime updatedAt;
 
-    public static CaseFolder create(String name, String firstSurname, String lastSurname, IdCard idCard, String owner) {
+    public static CaseFolder create(UserInfo userInfo, String owner) {
         return CaseFolder.builder()
             .id(UUID.randomUUID().toString())
             .status(CaseFolderStatus.PARTIALLY_CREATED)
-            .name(name)
-            .firstSurname(firstSurname)
-            .lastSurname(lastSurname)
-            .idCard(idCard)
+            .userInfo(userInfo.normalize())
             .owner(owner)
             .createdAt(LocalDateTime.now())
-            .build()
-            .normalize();
+            .build();
     }
 
-    public CaseFolder normalize() {
-        name = name.toUpperCase();
-        firstSurname = firstSurname.toUpperCase();
-        if (lastSurname != null) {
-            lastSurname = lastSurname.toUpperCase();
+    public boolean merge(CaseFolder updated) {
+        boolean modified = false;
+        if (updated.getUserInfo() != null) {
+            modified |= this.userInfo.merge(updated.getUserInfo());
         }
-        return this;
+        if (this.status != null && !this.status.equals(updated.getStatus())) {
+            this.status = updated.getStatus();
+            modified = true;
+        }
+        return modified;
     }
 
 }
