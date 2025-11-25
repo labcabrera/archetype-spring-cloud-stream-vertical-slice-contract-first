@@ -15,6 +15,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
@@ -31,7 +32,7 @@ public class CaseFolderEntity {
     @Column(name = "id", length = 36)
     private String id;
 
-    @ManyToOne
+    @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     private UserInfoEntity userInfo;
 
     @Column(name = "status", nullable = false, length = 50)

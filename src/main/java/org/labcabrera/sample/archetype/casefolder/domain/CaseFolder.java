@@ -35,10 +35,18 @@ public class CaseFolder {
     private LocalDateTime updatedAt;
 
     public static CaseFolder create(UserInfo userInfo, String owner) {
+        UserInfo normalizedUserInfo = UserInfo.builder()
+            .id(userInfo.getId() != null ? userInfo.getId() : UUID.randomUUID().toString())
+            .name(userInfo.getName())
+            .firstSurname(userInfo.getFirstSurname())
+            .lastSurname(userInfo.getLastSurname())
+            .idCard(userInfo.getIdCard())
+            .build()
+            .normalize();
         return CaseFolder.builder()
             .id(UUID.randomUUID().toString())
             .status(CaseFolderStatus.PARTIALLY_CREATED)
-            .userInfo(userInfo.normalize())
+            .userInfo(normalizedUserInfo)
             .owner(owner)
             .createdAt(LocalDateTime.now())
             .build();
