@@ -61,12 +61,15 @@ class DeleteCaseFolderCommandHandlerTest {
             "testuser",
             Set.of("case-folder-write"),
             Collections.emptySet());
-        caseFolder = CaseFolder.create(
-            "JOHN",
-            "DOW",
-            "SMITH",
-            new IdCard("12345678A", IdCardType.NIF),
-            "testuser");
+        var userInfo = org.labcabrera.sample.archetype.casefolder.domain.UserInfo.builder()
+            .id(null)
+            .name("JOHN")
+            .firstSurname("DOW")
+            .lastSurname(java.util.Optional.of("SMITH"))
+            .idCard(new IdCard("12345678A", IdCardType.NIF))
+            .build();
+
+        caseFolder = CaseFolder.create(userInfo, "testuser");
         command = new DeleteCaseFolderCommand(caseFolder.getId());
     }
 

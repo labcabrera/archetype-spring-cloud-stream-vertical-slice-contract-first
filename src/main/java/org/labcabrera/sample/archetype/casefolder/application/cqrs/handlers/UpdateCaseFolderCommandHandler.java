@@ -40,7 +40,7 @@ public class UpdateCaseFolderCommandHandler implements CommandHandler<UpdateCase
             .userInfo(UserInfo.builder()
                 .name(command.name())
                 .firstSurname(command.firstSurname())
-                .lastSurname(Optional.of(command.lastSurname()))
+                .lastSurname(Optional.ofNullable(command.lastSurname()))
                 .idCard(command.idCard())
                 .build())
             .build();

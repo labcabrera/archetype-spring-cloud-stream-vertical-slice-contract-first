@@ -21,7 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.labcabrera.sample.archetype.casefolder.infrastructure.persistence.jpa.mappers.CaseFolderMapper;
+import org.labcabrera.sample.archetype.casefolder.infrastructure.persistence.jpa.mappers.CaseFolderEntityMapper;
 
 import cz.jirutka.rsql.parser.RSQLParser;
 import cz.jirutka.rsql.parser.ast.Node;
@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 public class CaseFolderRepositoryJpaAdapter implements CaseFolderRepository {
 
     private final CaseFolderJpaRepository jpaRepository;
-    private final CaseFolderMapper mapper;
+    private final CaseFolderEntityMapper mapper;
     private final RSQLParser rsqlParser;
 
     @Override

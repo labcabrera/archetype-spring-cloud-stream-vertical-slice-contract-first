@@ -1,5 +1,6 @@
 package org.labcabrera.sample.archetype.casefolder.interfaces.http;
 
+import java.net.URI;
 import java.util.List;
 
 import org.labcabrera.sample.archetype.casefolder.application.cqrs.commands.CreateCaseFolderCommand;
@@ -57,7 +58,7 @@ public class CaseFolderController implements CaseFoldersApi {
             request.getIdCard().getNumber());
         CaseFolder caseFolder = commandBus.dispatch(command);
         var caseFolderDto = mapper.toDto(caseFolder);
-        return ResponseEntity.status(201).body(caseFolderDto);
+        return ResponseEntity.created(URI.create("/api/v1/case-folders/" + caseFolder.getId())).body(caseFolderDto);
     }
 
     @Override

@@ -5,7 +5,7 @@ import org.labcabrera.sample.archetype.casefolder.infrastructure.persistence.jpa
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface IdCardMapper {
+public interface IdCardEntityMapper {
 
     IdCard toDomain(IdCardEntity entity);
 

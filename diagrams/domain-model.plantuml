@@ -2,78 +2,92 @@
 
 !define ENTITY class
 
-ENTITY CaseFolder {
-    - String id
-    - CaseFolderStatus status
-    - String name
-    - String firstSurname
-    - String lastSurname
-    - IdCard idCard
-    - String owner
-    - LocalDateTime createdAt
-    - LocalDateTime updatedAt
+package "Case Folder Bounded Context" as CF {
+
+    ENTITY CaseFolder {
+        - String id
+        - CaseFolderStatus status
+        - UserInfo userInfo
+        - String owner
+        - LocalDateTime createdAt
+        - LocalDateTime updatedAt
+    }
+
+    ENTITY UserInfo {
+        - String id
+        - String name
+        - String firstSurname
+        - Optional<String> lastSurname
+        - IdCard idCard
+    }
+
+    ENTITY IdCard {
+        - String number
+        - String type
+    }
+
+    ENTITY IdCardType {
+        NIF
+        NIE
+        PASSPORT
+    }
+
+    ENUM CaseFolderStatus {
+        PARTIALLY_CREATED
+        ACTIVE
+        CLOSED
+        DELETED
+    }
+
 }
 
-ENUM CaseFolderStatus {
-    PARTIALLY_CREATED
-    ACTIVE
-    CLOSED
-    DELETED
+package "Case Step Bounded Context" as CS {
+
+    ENTITY CaseStep {
+        - String id
+        - String caseFolderId
+        - StepType stepType
+        - StepStatus status
+        - String assignedTo
+        - String owner
+        - LocalDateTime createdAt
+        - LocalDateTime updatedAt
+    }
+
+    ENUM StepType {
+        INITIAL_REVIEW
+        DETAILED_ANALYSIS
+        FINAL_DECISION
+    }
+
+    ENUM StepStatus {
+        IN_PROGRESS
+        COMPLETED
+        CANCELLED
+        ERROR
+    }
+
 }
 
-ENTITY IdCardType {
-    NIF
-    NIE
-    PASSPORT
-}
+CF.CaseFolder "1" *-- "0..*" CS.CaseStep : contains
 
-ENTITY IdCard {
-    - String number
-    - String type
-}
+CF.CaseFolder --> CF.CaseFolderStatus : status
+CF.CaseFolder --> CF.UserInfo : userInfo
 
-ENTITY CaseStep {
-    - String id
-    - String caseFolderId
-    - StepType stepType
-    - StepStatus status
-    - String assignedTo
-    - String owner
-    - LocalDateTime createdAt
-    - LocalDateTime updatedAt
-}
+CF.UserInfo --> CF.IdCard : idCard
+CF.IdCard --> CF.IdCardType : type
 
-ENUM StepType {
-    INITIAL_REVIEW
-    DETAILED_ANALYSIS
-    FINAL_DECISION
-}
+CS.CaseStep --> CS.StepType : stepType
+CS.CaseStep --> CS.StepStatus : status
 
-ENUM StepStatus {
-    IN_PROGRESS
-    COMPLETED
-    CANCELLED
-    ERROR
-}
-
-CaseFolder "1" *-- "0..*" CaseStep : contains
-
-CaseFolder --> CaseFolderStatus : status
-CaseFolder --> IdCard : idCard
-
-IdCard --> IdCardType : type
-
-CaseStep --> StepType : stepType
-CaseStep --> StepStatus : status
-
-note right of CaseFolder
+note top of CF.CaseFolder
     **CaseFolder**
     --
     Representa un expediente en el sistema asociado a una persona física.
     Un expediente tiene un estado y puede contener múltiples trámites.
 end note
 
-note right of CaseStep
+note top of CS.CaseStep
     **CaseStep**
     --
     Representa un trámite o paso dentro de un expediente.

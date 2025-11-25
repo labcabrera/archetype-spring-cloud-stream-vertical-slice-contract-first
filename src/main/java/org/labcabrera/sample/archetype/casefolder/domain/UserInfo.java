@@ -45,10 +45,12 @@ public class UserInfo {
             this.firstSurname = updated.getFirstSurname().toUpperCase();
             modified = true;
         }
-        if (updated.getLastSurname().isPresent()
-            && (this.lastSurname == null || !updated.getLastSurname().get().toUpperCase().equals(this.lastSurname.orElse("")))) {
-            this.lastSurname = Optional.of(updated.getLastSurname().get().toUpperCase());
-            modified = true;
+        if (updated.getLastSurname().isPresent()) {
+            var value = updated.getLastSurname().map(String::toUpperCase).get();
+            if (!value.equals(this.lastSurname.orElse(null))) {
+                this.lastSurname = Optional.of(value);
+                modified = true;
+            }
         }
         if (updated.getIdCard() != null && !updated.getIdCard().equals(this.idCard)) {
             this.idCard = updated.getIdCard();
