@@ -1,0 +1,26 @@
+spring:
+  config:
+    import:
+      - classpath:application-logging.yaml
+      - classpath:application-db.yaml
+      - classpath:application-cloud-stream.yaml
+      - classpath:application-springdoc.yaml
+      - classpath:application-security.yaml
+      - classpath:application-cache.yaml
+  application:
+    name: archetype-spring-cloud-stream
+  main:
+    banner-mode: off
+
+server:
+  port: ${SERVER_PORT:8082}
+  
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+

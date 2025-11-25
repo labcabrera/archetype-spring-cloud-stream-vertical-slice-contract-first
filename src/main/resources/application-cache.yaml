@@ -1,0 +1,11 @@
+spring:
+  cache:
+    type: redis
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    timeout: ${REDIS_TIMEOUT:60s}
+
+app:
+  cache:
+    ttl-minutes: ${CACHE_TTL_MINUTES:10}

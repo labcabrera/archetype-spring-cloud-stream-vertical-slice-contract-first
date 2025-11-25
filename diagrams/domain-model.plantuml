@@ -1,0 +1,82 @@
+@startuml domain-model
+
+!define ENTITY class
+
+ENTITY CaseFolder {
+    - String id
+    - CaseFolderStatus status
+    - String name
+    - String firstSurname
+    - String lastSurname
+    - IdCard idCard
+    - String owner
+    - LocalDateTime createdAt
+    - LocalDateTime updatedAt
+}
+
+ENUM CaseFolderStatus {
+    PARTIALLY_CREATED
+    ACTIVE
+    CLOSED
+    DELETED
+}
+
+ENTITY IdCardType {
+    NIF
+    NIE
+    PASSPORT
+}
+
+ENTITY IdCard {
+    - String number
+    - String type
+}
+
+ENTITY CaseStep {
+    - String id
+    - String caseFolderId
+    - StepType stepType
+    - StepStatus status
+    - String assignedTo
+    - String owner
+    - LocalDateTime createdAt
+    - LocalDateTime updatedAt
+}
+
+ENUM StepType {
+    INITIAL_REVIEW
+    DETAILED_ANALYSIS
+    FINAL_DECISION
+}
+
+ENUM StepStatus {
+    IN_PROGRESS
+    COMPLETED
+    CANCELLED
+    ERROR
+}
+
+CaseFolder "1" *-- "0..*" CaseStep : contains
+
+CaseFolder --> CaseFolderStatus : status
+CaseFolder --> IdCard : idCard
+
+IdCard --> IdCardType : type
+
+CaseStep --> StepType : stepType
+CaseStep --> StepStatus : status
+
+note right of CaseFolder
+    **CaseFolder**
+    --
+    Representa un expediente en el sistema asociado a una persona física.
+    Un expediente tiene un estado y puede contener múltiples trámites.
+end note
+
+note right of CaseStep
+    **CaseStep**
+    --
+    Representa un trámite o paso dentro de un expediente.
+end note
+
+@enduml

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: archetype-spring-cloud-stream-vertical-slice
+  labels:
+    k8s-app: archetype-spring-cloud-stream-vertical-slice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      k8s-app: archetype-spring-cloud-stream-vertical-slice
+  template:
+    metadata:
+      labels:
+        k8s-app: archetype-spring-cloud-stream-vertical-slice
+    spec:
+      imagePullSecrets:
+      - name: registrykey
+      containers:
+      - name: archetype-spring-cloud-stream-vertical-slice
+        image: labcabrera/archetype-spring-cloud-stream-vertical-slice:latest
+        env:
+        - name: TZ
+          value: Europe/Madrid
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: sample-config
+              key: log_level
+        - name: JAVA_OPTS
+          valueFrom:
+            configMapKeyRef:
+              name: sample-config
+              key: java_opts
+        - name: FOO_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: sample-secret
+              key: foo
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+          name: web
+          protocol: TCP

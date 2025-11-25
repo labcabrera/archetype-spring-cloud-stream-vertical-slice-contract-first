@@ -1,0 +1,41 @@
+spring:
+  cloud:
+    function:
+      definition: onCaseFolderCreation;onCaseFolderCreated;onCaseFolderDeleted;onCaseStepCreated
+    stream:
+      bindings:
+        # input bindings
+        onCaseFolderCreation-in-0:
+          destination: sample.case-folders.creation.v1
+          group: case-folders-svc
+          contentType: application/json
+        onCaseFolderCreated-in-0:
+          destination: sample.case-folders.created.v1
+          group: case-folders-svc
+          contentType: application/json
+        onCaseFolderDeleted-in-0:
+          destination: sample.case-folders.deleted.v1
+          group: case-folders-svc
+          contentType: application/json
+        onCaseStepCreated-in-0:
+          destination: sample.case-steps.created.v1
+          group: case-folders-svc
+          contentType: application/json
+        # output bindings
+        caseFolderCreated-out-0:
+          destination: sample.case-folders.created.v1
+          contentType: application/json
+        caseFolderUpdated-out-0:
+          destination: sample.case-folders.updated.v1
+          contentType: application/json
+        caseFolderDeleted-out-0:
+          destination: sample.case-folders.deleted.v1
+          contentType: application/json
+        caseStepCreated-out-0:
+          destination: sample.case-steps.created.v1
+          contentType: application/json
+      kafka:
+        binder:
+          brokers: ${KAFKA_BROKERS:localhost:9092}
+          autoCreateTopics: true
+          minPartitionCount: 1

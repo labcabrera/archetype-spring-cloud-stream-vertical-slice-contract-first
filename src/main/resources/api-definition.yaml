@@ -1,0 +1,483 @@
+openapi: 3.0.1
+info:
+  title: Sample Spring Cloud Stream Vertical Slices Archetype
+  description: REST API for Case Folder and Case Steps management using Spring Cloud Stream, CQRS and Vertical Slices.
+  contact:
+    name: Luis Cabrera
+    email: lab.cabrera@gmail.com
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+security:
+  - oidc: []
+tags:
+  - name: Case Folders
+    description: API for case folder management
+  - name: Case Steps
+    description: API for case step management
+paths:
+  /api/v1/case-folders:
+    get:
+      tags:
+        - Case Folders
+      summary: Get case folders by RSQL
+      description: Filter case folders using an RSQL expression with optional pagination
+      operationId: getCaseFoldersByRsql
+      parameters:
+        - name: q
+          in: query
+          description: RSQL expression to filter case folders
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Zero-based page index (0..N)
+          required: false
+          schema:
+            minimum: 0
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          description: The size of the page to be returned
+          required: false
+          schema:
+            minimum: 1
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          description: 'Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.'
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Paged case folders
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseFolderPageResponse'
+        '400':
+          description: Invalid RSQL expression
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    post:
+      tags:
+        - Case Folders
+      summary: Create new case folder
+      description: Creates a new case folder using the CQRS pattern. Sends a command that emits an event.
+      operationId: create
+      requestBody:
+        description: Case folder data to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCaseFolderRequest'
+        required: true
+      responses:
+        '201':
+          description: Case folder created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseFolderDto'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/v1/case-folders/{caseFolderId}:
+    get:
+      tags:
+        - Case Folders
+      summary: Get case folder by id
+      description: Retrieve a specific case folder by its unique identifier
+      operationId: getCaseFolderById
+      parameters:
+        - name: caseFolderId
+          in: path
+          description: Unique case folder identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Case folder found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseFolderDto'
+        '404':
+          description: Case folder not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    delete:
+      tags:
+        - Case Folders
+      summary: Delete case folder
+      description: Deletes an existing case folder using the CQRS pattern. Sends a command that emits an event.
+      operationId: delete
+      parameters:
+        - name: caseFolderId
+          in: path
+          description: Unique case folder identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Case folder deleted successfully
+        '404':
+          description: Case folder not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    patch:
+      tags:
+        - Case Folders
+      summary: Update case folder
+      description: Updates an existing case folder using the CQRS pattern. Sends a command that emits an event.
+      operationId: update
+      parameters:
+        - name: caseFolderId
+          in: path
+          description: Unique case folder identifier
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Case folder data to update
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCaseFolderRequest'
+        required: true
+      responses:
+        '200':
+          description: Case folder updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseFolderDto'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Case folder not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/v1/case-steps/{caseStepId}:
+    get:
+      tags:
+        - Case Steps
+      summary: Get case step by id
+      description: Retrieve a specific case step by its unique identifier
+      operationId: getCaseStepById
+      parameters:
+        - name: caseStepId
+          in: path
+          description: Unique case step identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Case step found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseStepDto'
+        '404':
+          description: Case step not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/v1/case-steps/case-folders/{caseFolderId}:
+    get:
+      tags:
+        - Case Steps
+      summary: Get case steps by case folder id
+      description: Retrieve case steps associated with a specific case folder
+      operationId: getCaseStepsByCaseFolderId
+      parameters:
+        - name: caseFolderId
+          in: path
+          description: Unique case folder identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Case steps found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CaseStepDto'
+        '404':
+          description: Case steps not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+components:
+  schemas:
+    CreateCaseFolderRequest:
+      required:
+        - firstSurname
+        - idCard
+        - name
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name
+          example: John
+        firstSurname:
+          type: string
+          description: First surname
+          example: Doe
+        lastSurname:
+          type: string
+          description: Last surname
+          example: Smith
+        idCard:
+          $ref: '#/components/schemas/IdCardDto'
+      description: Data to create a new case folder
+    IdCardDto:
+      required:
+        - number
+        - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: Id card type
+          example: NIF
+          enum:
+            - NIF
+            - NIE
+            - PASSPORT
+        number:
+          type: string
+          description: Id card number
+          example: 12345678A
+      description: IdCard
+    ApiError:
+      required:
+        - code
+        - message
+        - timestamp
+      type: object
+      properties:
+        code:
+          type: string
+          description: Error code
+          example: case-folder.msg.err.not-found
+        message:
+          type: string
+          description: Detailed error message
+          example: Case folder not found
+        timestamp:
+          type: string
+          description: Timestamp of the error
+          format: date-time
+        details:
+          type: array
+          description: Validation errors, if any
+          items:
+            $ref: '#/components/schemas/ApiErrorDetail'
+      description: API error information
+    ApiErrorDetail:
+      required:
+        - key
+        - message
+      type: object
+      properties:
+        key:
+          type: string
+          description: Error key
+          example: name
+        message:
+          type: string
+          description: Error message
+          example: Field is required
+      description: API error detail
+    CaseFolderDto:
+      required:
+        - firstSurname
+        - id
+        - idCard
+        - name
+        - owner
+        - status
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the case folder
+          example: 550e8400-e29b-41d4-a716-446655440000
+        status:
+          type: string
+          description: Status
+          example: ACTIVE
+          enum:
+            - PARTIALLY_CREATED
+            - ACTIVE
+            - CLOSED
+            - DELETED
+        name:
+          type: string
+          description: Name
+          example: John
+        firstSurname:
+          type: string
+          description: First surname
+          example: Doe
+        lastSurname:
+          type: string
+          description: Last surname
+          example: Smith
+        idCard:
+          $ref: '#/components/schemas/IdCardDto'
+        owner:
+          type: string
+          description: Entity owner
+          example: john.doe
+      description: Case folder information
+    UpdateCaseFolderRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name
+          example: John
+        firstSurname:
+          type: string
+          description: First surname
+          example: Doe
+        lastSurname:
+          type: string
+          description: Last surname
+          example: Smith
+      description: Data to update an existing case folder
+    CaseStepDto:
+      required:
+        - assignedTo
+        - caseFolderId
+        - id
+        - owner
+        - status
+        - stepType
+      type: object
+      properties:
+        id:
+          type: string
+          description: Case step identifier
+          example: '12345'
+        caseFolderId:
+          type: string
+          description: Case folder identifier
+          example: '67890'
+        stepType:
+          type: string
+          description: Step type
+          example: INITIAL_REVIEW
+          enum:
+            - INITIAL_REVIEW
+            - DETAILED_ANALYSIS
+            - FINAL_DECISION
+        status:
+          type: string
+          description: Step status
+          example: IN_PROGRESS
+          enum:
+            - IN_PROGRESS
+            - COMPLETED
+            - CANCELLED
+            - ERROR
+        assignedTo:
+          type: string
+          description: Assigned to
+          example: user123
+        owner:
+          type: string
+          description: Owner
+          example: owner123
+    CaseFolderPageResponse:
+      required:
+        - content
+        - pagination
+      type: object
+      properties:
+        content:
+          type: array
+          description: List of items in the current page
+          items:
+            $ref: '#/components/schemas/CaseFolderDto'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      description: Paged response for case folders
+    Pagination:
+      required:
+        - page
+        - size
+        - totalElements
+        - totalPages
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page number (0-based)
+          format: int32
+          example: 0
+        size:
+          type: integer
+          description: Number of items per page
+          format: int32
+          example: 20
+        totalElements:
+          type: integer
+          description: Total number of elements
+          format: int64
+          example: 100
+        totalPages:
+          type: integer
+          description: Total number of pages
+          format: int32
+          example: 5
+      description: Pagination information
+  securitySchemes:
+    bearer-jwt:
+      type: http
+      description: 'Enter JWT bearer token as: Bearer <token>'
+      scheme: bearer
+      bearerFormat: JWT
+    oidc:
+      type: oauth2
+      description: OAuth2 con OIDC contra IAM
+      flows:
+        authorizationCode:
+          authorizationUrl: http://localhost:8090/realms/sample/protocol/openid-connect/auth
+          tokenUrl: http://localhost:8090/realms/sample/protocol/openid-connect/token
+          scopes:
+            openid: OpenID scope
+            profile: User profile scope
+            api: API access scope

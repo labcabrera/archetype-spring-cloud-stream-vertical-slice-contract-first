@@ -1,0 +1,23 @@
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: alpha
+    tagsSorter: alpha
+    oauth:
+      client-id: ${IAM_SAMPLE_CLIENT_ID:sample-client}
+      client-secret: ${IAM_SAMPLE_CLIENT_SECRET:XiaV7RjIAZsrMrlEke5YdFRSxs9aCGpQ}
+      scope-separator: " "
+      use-pkce-with-authorization-code-grant: true
+  oAuthFlow:
+    authorizationUrl: ${IAM_AUTHORIZATION_URL:http://localhost:8090/realms/sample/protocol/openid-connect/auth}
+    tokenUrl: ${IAM_TOKEN_URL:http://localhost:8090/realms/sample/protocol/openid-connect/token}
+  info:
+    title: Sample Spring Cloud Stream Vertical Slices Archetype
+    description: "REST API for Case Folder and Case Steps management using Spring Cloud Stream, CQRS and Vertical Slices."
+    version: 1.0.0
+    contact:
+      name: Luis Cabrera
+      email: lab.cabrera@gmail.com
+  servers: ${SPRINGDOC_SERVERS:http://localhost:8080}

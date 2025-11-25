@@ -1,0 +1,33 @@
+<configuration>
+    <!-- JSON Console Appender for structured logging -->
+    <appender name="jsonConsole" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"app_name":"${spring.application.name:-unknown}"}</customFields>
+        </encoder>
+    </appender>
+
+    <!-- Standard Console Appender for human-readable logging -->
+    <appender name="standardConsole" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Profile-specific configurations -->
+    <springProfile name="json">
+        <root level="INFO">
+            <appender-ref ref="jsonConsole"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="!json">
+        <root level="INFO">
+            <appender-ref ref="standardConsole"/>
+        </root>
+    </springProfile>
+
+    <!-- Default configuration (fallback) -->
+    <root level="INFO">
+        <appender-ref ref="standardConsole"/>
+    </root>
+</configuration>

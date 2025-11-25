@@ -1,0 +1,109 @@
+@startuml Case Folder Creation Sequence Diagram
+title Case Folder Creation Sequence Diagram
+
+skinparam ParticipantBackgroundColor #005b72
+skinparam ParticipantFontColor #ffffff
+skinparam ArrowColor #000000
+
+participant "REST Client" as Client
+participant "CaseFolder Controller\n(Infrastructure)" as CaseFolderController
+participant "CreateCaseFolderHandler\n(Application)" as CreateCaseFolderHandler
+participant "UpdateCaseFolderHandler\n(Application)" as UpdateCaseFolderHandler
+participant "CaseFolder Repository\n(Infrastructure)" as CaseFolderRepository
+participant "CaseStep Initialization Consumer\n(Infrastructure)" as CaseStepConsumer
+participant "CaseStep CQRS Handler\n(Application)" as ConfService
+participant "CaseStep Initialization Repository\n(Infrastructure)" as CaseStepRepository
+participant "Database" as DB
+participant "Kafka" as Kafka
+participant "Redis" as Redis
+
+Client -> CaseFolderController: POST /case-folders
+activate CaseFolderController
+
+' Case folder creation
+CaseFolderController -> CreateCaseFolderHandler: handle(CQRS Command)
+activate CreateCaseFolderHandler
+CreateCaseFolderHandler -> CreateCaseFolderHandler: validate()
+CreateCaseFolderHandler -> CreateCaseFolderHandler: readAuthenticatedUser()
+CreateCaseFolderHandler -> CaseFolderRepository: save(CaseFolder)
+activate CaseFolderRepository
+CaseFolderRepository -> DB: INSERT case_folder
+activate DB
+DB --> CaseFolderRepository: case_folder saved
+deactivate DB
+CaseFolderRepository -> Redis: cache(case_folder)
+activate Redis
+deactivate Redis
+
+' CaseFolderRepository --> CaseFolderHandler: CaseFolder entity
+deactivate CaseFolderRepository
+
+CreateCaseFolderHandler -> Kafka: publish CaseFolderCreatedEvent
+activate Kafka
+Kafka --> CreateCaseFolderHandler: ack
+deactivate Kafka
+
+CreateCaseFolderHandler --> CaseFolderController: CaseFolderResponse
+deactivate CreateCaseFolderHandler
+CaseFolderController --> Client: 201 Created
+deactivate CaseFolderController
+
+' Case step creation
+Kafka -> CaseStepConsumer: consume CaseFolderCreatedEvent
+activate Kafka
+activate CaseStepConsumer
+CaseStepConsumer -> CaseStepConsumer: readUserFromHeaders()
+deactivate Kafka
+
+CaseStepConsumer -> ConfService: processCaseFolderCreated(event)
+activate ConfService
+
+ConfService -> CaseStepRepository: save(CaseStep)
+activate CaseStepRepository
+CaseStepRepository -> DB: INSERT case_step
+activate DB
+DB --> CaseStepRepository: case_step saved
+deactivate DB
+CaseStepRepository --> ConfService: CaseStep entity
+CaseStepRepository -> Redis: cache(case_step)
+activate Redis
+deactivate Redis
+deactivate CaseStepRepository
+ConfService -> Kafka: publish CaseStepCreatedEvent
+activate Kafka
+Kafka --> ConfService: ack
+deactivate Kafka
+
+ConfService --> CaseStepConsumer: processed
+deactivate ConfService
+deactivate CaseStepConsumer
+
+' Update case folder status
+Kafka -> UpdateCaseFolderHandler: consume CaseStepCreatedEvent
+activate Kafka
+deactivate Kafka
+activate UpdateCaseFolderHandler
+UpdateCaseFolderHandler -> CaseFolderRepository: findById(caseFolderId)
+activate CaseFolderRepository
+CaseFolderRepository --> UpdateCaseFolderHandler: CaseFolder entity
+deactivate CaseFolderRepository
+UpdateCaseFolderHandler -> UpdateCaseFolderHandler: readAuthenticatedUser()
+
+UpdateCaseFolderHandler -> CaseFolderRepository: updateStatus(caseFolderId, status)
+activate CaseFolderRepository
+CaseFolderRepository -> DB: UPDATE case_folder SET status=?
+activate DB
+DB --> CaseFolderRepository: case_folder updated
+deactivate DB
+CaseFolderRepository -> Redis: update cache(case_folder)
+activate Redis
+deactivate Redis
+CaseFolderRepository --> UpdateCaseFolderHandler: CaseFolder status updated
+deactivate CaseFolderRepository
+
+UpdateCaseFolderHandler -> Kafka: publish CaseFolderStatusUpdatedEvent
+activate Kafka
+Kafka --> UpdateCaseFolderHandler: ack
+deactivate Kafka
+
+@enduml

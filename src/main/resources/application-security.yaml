@@ -1,0 +1,12 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${IAM_JWK_URI:http://localhost:8090/realms/sample/protocol/openid-connect/certs}
+          issuer-uri: ${IAM_ISSUER_URI:http://localhost:8090/auth/realms/sample}
+server:
+  servlet:
+    session:
+      cookie:
+        enabled: false
