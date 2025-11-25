@@ -477,6 +477,22 @@ De este modo cada vez que se crea un expediente, se incrementa el contador `case
 casefoldercreated_total 1.0
 ----
 
+== IAM
+
+En este ejemplo se ha utilizado Keycloak como proveedor de identidad (IAM) para gestionar la autenticación y autorización de los usuarios. Dentro del docker-compose se levanta una instancia de Keycloak sin configuración previa.
+
+Tendremos que acceder a la consola de administración de Keycloak en `http://localhost:8090/` y crear un realm llamado `sample`.
+
+Una vez creado el realm debemos crear un cliente llamado `sample-client` con los siguientes ajustes con "Client authentication enabled" y "Authorization enabled".
+
+image::./images/keycloak-client.png[]
+
+Después crearemos los roles utilizados por este ejemplo:
+
+image::./images/keycloak-roles.png[]
+
+Y finalmente crearemos dos usuarios, uno con el rol de manager y otro sólamente con los roles de _reader/writer_.
+
 == Sonar
 
 Para ejecutar el análisis de SonarQube deberemos crear un token en nuestra instancia de SonarQube y exportarlo como variable de entorno `SONAR_TOKEN`. Después ejecutamos el siguiente comando:
