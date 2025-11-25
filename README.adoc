@@ -15,18 +15,18 @@ image:https://img.shields.io/badge/Kafka-3.4-green.svg[Kafka 3.4,link="https://k
 
 == Introducción
 
-Este proyecto es un prototipo que muestra una aplicación Java Spring Boot diseñada siguiendo principios de Clean Architecture (hexagonal / ports & adapters) y usando Spring Cloud Stream para integración con Kafka en un enfoque "vertical slices" (cada módulo contiene sus capas: domain, application, infrastructure e interfaces).
+Este proyecto es un prototipo que muestra una aplicación Java Spring Boot diseñada siguiendo principios de link:https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html[Clean Architecture] y usando link:https://spring.io/projects/spring-cloud-stream[Spring Cloud Stream] para integración con Kafka en un enfoque "vertical slices" (cada módulo contiene sus capas: domain, application, infrastructure e interfaces).
 
-En este ejemplo se implementa una API rest usando el enfoque contract-first, definiendo los endpoints y modelos de datos a través de OpenAPI 3.0 dentro del fichero _/src/main/resources/api/openapi.yaml_ y se utiliza el plugin link:https://plugins.gradle.org/plugin/org.openapi.generator[org.openapi.generator] para generar los DTOs y controladores usando el _generatorName = "spring"_.
+En este ejemplo se implementa una API rest usando el enfoque contract-first, definiendo los endpoints y modelos de datos a través de OpenAPI 3.0 dentro del fichero link:https://raw.githubusercontent.com/labcabrera/archetype-spring-cloud-stream-vertical-slice-contract-first/refs/heads/develop/src/main/resources/api-definition.yaml[api-definition.yaml] y se utiliza el plugin link:https://plugins.gradle.org/plugin/org.openapi.generator[org.openapi.generator] para generar los DTOs y controladores usando el link:https://openapi-generator.tech/docs/generators/spring/[generador de Spring].
 
-Pretende ser un punto de partida para microservicios que publican y consumen eventos, usando JPA para la persistencia, CQRS para la integración de commands y queries. El prototipo está pensado para equipos de desarrollo que no estén familiarizados con conceptos de DDD o event sourcing tales como link:https://www.axoniq.io/framework[Axon] o link:https://eventuate.io/abouteventuatetram.html[Eventuate Tram] y se enfoquen en la implementación de la lógica de  negocio.
+Pretende ser un punto de partida para microservicios que publican y consumen eventos, usando JPA para la persistencia, CQRS para la integración de commands y queries. El prototipo está pensado para equipos de desarrollo que *no estén familiarizados con conceptos de DDD o event sourcing* tales como link:https://www.axoniq.io/framework[Axon] o link:https://eventuate.io/abouteventuatetram.html[Eventuate Tram] y se enfoquen en la implementación de la lógica de  negocio con un enfoque tradicional de servicios.
 
 El prototipo incluye también una configuración de seguridad basada en OAuth2 Resource Server. Las llamadas a la API requieren de un token previamente emitido por un proveedor de identidad que será validado por la aplicación a través de la configuración JWT del IAM.
 
 == Tecnologías utilizadas
 
 - Spring Boot 3.x (Java 21)
-- Spring Cloud Stream + Kafka binder
+- Spring Cloud Stream + Kafka Binder
 - Spring Data JPA + Hibernate
 - Jackson
 - MapStruct
@@ -319,28 +319,33 @@ Dentro del _application.cqrs_ de cada vertical establecemos la estructura:
 
 === Springdoc
 
-En este caso el enfoque REST es _code-first_, por lo que se ha utilizado anotaciones en los controladores para definir los endpoints y sus contratos.
+En este caso el enfoque REST es _Contract-First_, por lo que las definiciones de los endpoints y modelos de datos se encuentran en el fichero _api-definition.yaml_.
 
-Podemos consultar la API localmente en `http://localhost:8082/swagger-ui.html`
+Se ha utilizado la librería link:https://springdoc.org/[Springdoc OpenAPI] para generar la documentación de la API REST basada en OpenAPI 3.0.
 
-Las anotaciones se han definido en una interface _{controller}Definition_ que será implementada por nuestro controlador. De este modo separamos la definición del contrato de la implementación.
+La configuración del plugin de Gradle utilizada es:
 
-Hemos añadido también una configuración personalizada de OpenAPI para definir la seguridad OAuth2 en la documentación para usar tanto un Bearer token como el flujo Authorization Code añadiendo en la configuracion de OpenAPI lo siguiente:
-
-[source,java]
+[source,groovy]
 ----
-		components.addSecuritySchemes(("oidc"), new SecurityScheme()
-			.type(SecurityScheme.Type.OAUTH2)
-			.description("OAuth2 con OIDC contra IAM")
-			.flows(new OAuthFlows()
-				.authorizationCode(new OAuthFlow()
-					.authorizationUrl(authorizationUrl)
-					.tokenUrl(tokenUrl)
-					.scopes(new Scopes()
-						.addString("openid", "OpenID scope")
-						.addString("profile", "User profile scope")
-						.addString("api", "API access scope")))));
+openApiGenerate {
+    generatorName = "spring"
+    inputSpec = "$projectDir/src/main/resources/api-definition.yaml"
+    outputDir = "$buildDir/generated/openapi"
+    apiPackage = "org.labcabrera.sample.archetype.interfaces.api"
+    modelPackage = "org.labcabrera.sample.archetype.interfaces.model"
+    configOptions = [
+        interfaceOnly: "true",
+        dateLibrary: "java8",
+        useBeanValidation: "true",
+        library: "spring-boot",
+        delegatePattern: "true",
+        useOptional: "true",
+        performBeanValidation: "true"
+    ]
+}
 ----
+
+Dentro de cada vertical, los controladores REST extienden de las interfaces generadas por Springdoc y se implementan los métodos correspondientes mapeando los objetos del dominio a los DTOs generados usando MapStruct.
 
 === Mapeo de campos
 
@@ -454,19 +459,35 @@ A través de la propiedad HTTP _Accept-Language_ se puede especificar el idioma 
 
 En el proyecto se ha incluido soporte para métricas y monitorización utilizando Spring Boot Actuator y Micrometer con Prometheus como backend.
 
-En los servicios que queramos monitorizar podemos inyectar el registry de Micrometer y definir nuestras propias métricas personalizadas. Por ejemplo, en el servicio de creación de expedientes se ha añadido un contador para medir el número de expedientes creados:
+Se ha creado un _port_ para la definición de las métricas personalizadas y un adapter basado en Micrometer:
 
 [source,java]
 ----
-    private final MeterRegistry meterRegistry;
-    private Counter caseFolderCreatedCounter;
+public class CaseFolderMetricAdapter implements CaseFolderMetricPort {
 
-    @PostConstruct
-    private void initMetrics() {
+    private final Counter caseFolderCreatedCounter;
+    private final Counter caseFolderUpdatedCounter;
+    private final Counter caseFolderDeletedCounter;
+
+    public CaseFolderMetricAdapter(MeterRegistry meterRegistry) {
         caseFolderCreatedCounter = Counter.builder("casefoldercreated")
             .description("Number of case folders created")
             .register(meterRegistry);
+        caseFolderUpdatedCounter = Counter.builder("casefolderupdated")
+            .description("Number of case folders updated")
+            .register(meterRegistry);
+        caseFolderDeletedCounter = Counter.builder("casefolderdeleted")
+            .description("Number of case folders deleted")
+            .register(meterRegistry);
     }
+
+    @Override
+    public void incrementCaseFolderCreatedCounter() {
+        caseFolderCreatedCounter.increment();
+    }
+
+    // ...
+}
 ----
 
 De este modo cada vez que se crea un expediente, se incrementa el contador `casefoldercreated` y el endpoint de prometheus registrará esta métrica devolviendo:
