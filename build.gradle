@@ -55,6 +55,17 @@ dependencies {
 	implementation "cz.jirutka.rsql:rsql-parser:${rsqlParserVersion}"
 	implementation "org.mapstruct:mapstruct:${mapstructVersion}"
 
+	// Dependencies required by the generated OpenAPI Feign client
+	implementation "io.github.openfeign:feign-core:13.5"
+	implementation "io.github.openfeign:feign-jackson:13.5"
+	implementation "io.github.openfeign:feign-slf4j:13.5"
+	implementation "io.github.openfeign:feign-okhttp:13.5"
+	implementation "io.github.openfeign.form:feign-form:3.8.0"
+
+	// Dependencies required by generated OAuth helper classes
+	implementation "com.github.scribejava:scribejava-core:8.0.0"
+	implementation "com.brsanthu:migbase64:2.2"
+
 	implementation "org.webjars:swagger-ui:4.15.5"
 
 	runtimeOnly 'com.h2database:h2'
