@@ -17,7 +17,7 @@ image:https://img.shields.io/badge/Kafka-3.4-green.svg[Kafka 3.4,link="https://k
 
 Este proyecto es un prototipo que muestra una aplicación Java Spring Boot diseñada siguiendo principios de link:https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html[Clean Architecture] y usando link:https://spring.io/projects/spring-cloud-stream[Spring Cloud Stream] para integración con Kafka en un enfoque "vertical slices" (cada módulo contiene sus capas: domain, application, infrastructure e interfaces).
 
-En este ejemplo se implementa una API rest usando el enfoque contract-first, definiendo los endpoints y modelos de datos a través de OpenAPI 3.0 dentro del fichero link:https://raw.githubusercontent.com/labcabrera/archetype-spring-cloud-stream-vertical-slice-contract-first/refs/heads/develop/src/main/resources/api-definition.yaml[api-definition.yaml] y se utiliza el plugin link:https://plugins.gradle.org/plugin/org.openapi.generator[org.openapi.generator] para generar los DTOs y controladores usando el link:https://openapi-generator.tech/docs/generators/spring/[generador de Spring].
+En este ejemplo se implementa una API rest usando el enfoque _Contract First_, definiendo los endpoints y modelos de datos a través de OpenAPI 3.x dentro del fichero link:https://raw.githubusercontent.com/labcabrera/archetype-spring-cloud-stream-vertical-slice-contract-first/refs/heads/develop/src/main/resources/api-definition.yaml[api-definition.yaml] y se utiliza el plugin link:https://plugins.gradle.org/plugin/org.openapi.generator[org.openapi.generator] para generar los DTOs y controladores usando el link:https://openapi-generator.tech/docs/generators/spring/[generador de Spring].
 
 Pretende ser un punto de partida para microservicios que publican y consumen eventos, usando JPA para la persistencia, CQRS para la integración de commands y queries. El prototipo está pensado para equipos de desarrollo que *no estén familiarizados con conceptos de DDD o event sourcing* tales como link:https://www.axoniq.io/framework[Axon] o link:https://eventuate.io/abouteventuatetram.html[Eventuate Tram] y se enfoquen en la implementación de la lógica de  negocio con un enfoque tradicional de servicios.
 
@@ -34,7 +34,7 @@ TIP: En el caso de usar un enfoque _Code-First_ tenemos este mismo ejemplo en el
 - link:https://spring.io/projects/spring-cloud-stream[Spring Cloud Stream] + link:https://docs.spring.io/spring-cloud-stream/docs/current/reference/html/spring-cloud-stream-binder-kafka.html[Kafka Binder]
 - link:https://spring.io/projects/spring-cloud-openfeign[Spring Cloud OpenFeign] para clientes REST
 - link:https://mapstruct.org/[MapStruct] para mapeo de objetos
-- link:https://springdoc.org/[Springdoc OpenAPI] para documentación de la API REST
+- link:https://springdoc.org/[Springdoc] para documentación de la API REST
 - link:https://github.com/jirutka/rsql-parser[RSQL parser] para filtros en endpoints REST
 - link:https://redis.io/[Redis] para cacheo de datos
 - link:https://resilience4j.readme.io/docs/getting-started[Resilience4j] para tolerancia a fallos en el cliente REST

@@ -19,6 +19,8 @@ participant "Redis" as Redis
 participant "Keycloak" as Keycloak
 participant "User API" as UserAPI
 
+== CaseFolder creation (API request) ==
+
 Client -> CaseFolderController: POST /case-folders
 activate CaseFolderController
 
@@ -50,7 +52,8 @@ deactivate CreateCaseFolderHandler
 CaseFolderController --> Client: 201 Created
 deactivate CaseFolderController
 
-' Case step creation
+== CaseStep processing (Kafka activated event) ==
+
 Kafka -> CaseStepConsumer: consume CaseFolderCreatedEvent
 activate Kafka
 activate CaseStepConsumer
@@ -89,7 +92,8 @@ CaseStepHandler --> CaseStepConsumer: processed
 deactivate CaseStepHandler
 deactivate CaseStepConsumer
 
-' Update case folder status
+== Update case folder (Kafka activated event) ==
+
 Kafka -> UpdateCaseFolderHandler: consume CaseStepCreatedEvent
 activate Kafka
 deactivate Kafka
