@@ -15,6 +15,7 @@ import org.labcabrera.sample.archetype.shared.application.Guard;
 import org.labcabrera.sample.archetype.shared.application.SecurityPort;
 import org.labcabrera.sample.archetype.shared.domain.exceptions.ConstraintViolationException;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -32,24 +33,16 @@ public class CreateCaseFolderCommandHandler implements CommandHandler<CreateCase
     private final Validator validator;
     private final CaseFolderMetricPort caseFolderMetricPort;
 
-    public CaseFolder handle(CreateCaseFolderCommand command) {
+    public CaseFolder handle(@Validated CreateCaseFolderCommand command) {
         var user = securityPort.requireCurrentUser();
         log.info("Create case folder << {} (user: {})", command.idCardNumber(), user.username());
         caseFolderGuard.checkCreate(user);
-        validateCommand(command);
         var caseFolder = buildCaseFolderFromCommand(command, user.username());
         validateCaseFolder(caseFolder);
         var created = caseFolderRepository.save(caseFolder);
         caseFolderMetricPort.incrementCaseFolderCreatedCounter();
         sendNotification(created);
         return created;
-    }
-
-    private void validateCommand(CreateCaseFolderCommand command) {
-        var violations = validator.validate(command);
-        if (!violations.isEmpty()) {
-            throw new ConstraintViolationException("case-folder.msg.err.validation-error", violations);
-        }
     }
 
     private void validateCaseFolder(CaseFolder caseFolder) {
