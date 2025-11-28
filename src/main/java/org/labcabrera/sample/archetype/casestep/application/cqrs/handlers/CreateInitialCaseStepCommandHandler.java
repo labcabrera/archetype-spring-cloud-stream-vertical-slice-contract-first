@@ -19,8 +19,6 @@ import org.labcabrera.sample.archetype.shared.application.SecurityPort.Authentic
 import org.labcabrera.sample.archetype.shared.domain.exceptions.BadRequestException;
 import org.springframework.stereotype.Component;
 
-import com.labcabrera.sample.archetype.generated.model.CaseStepDto;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

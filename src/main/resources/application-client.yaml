@@ -1,0 +1,12 @@
+users:
+  client:
+    base-path: http://localhost:8083
+    auth-type: oauth-password
+    auth-name: oidc
+    oauth:
+      token-url: http://localhost:8090/realms/sample/protocol/openid-connect/token
+      client-id: sample-client
+      client-secret: jYDMt7946xb5uwFee6aQj8uKhpft1mxG
+      username: sample-user-viewer
+      password: changeit
+      scopes: openid profile

@@ -7,6 +7,7 @@ spring:
       - classpath:application-springdoc.yaml
       - classpath:application-security.yaml
       - classpath:application-cache.yaml
+      - classpath:application-client.yaml
   application:
     name: archetype-spring-cloud-stream
   main:
