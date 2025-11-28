@@ -8,6 +8,7 @@ import org.labcabrera.sample.archetype.generated.client.user.model.UserDto;
 import org.labcabrera.sample.archetype.generated.client.user.model.UserDtoPageResponse;
 import org.springframework.stereotype.Service;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,6 +20,7 @@ public class UserClientAdapter implements UserClientPort {
     private final UsersApi usersApi;
 
     @Override
+    @CircuitBreaker(name = "cbUserApi", fallbackMethod = "getAssignedUserFallback")
     public String getAssignedUser(StepType stepType) {
         log.debug("Fetching user for step type {}", stepType);
         String rsql = "name!=user-error";
@@ -38,6 +40,11 @@ public class UserClientAdapter implements UserClientPort {
         catch (Exception ex) {
             throw new AssignedUserReadException("user.client.err.user-api-error", ex);
         }
+    }
+
+    public void getAssignedUserFallback(Throwable ex) {
+        log.error("Fallback triggered when fetching user", ex);
+        throw new AssignedUserReadException("user.client.err.fallback-error", ex);
     }
 
 }

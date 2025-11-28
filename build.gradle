@@ -54,6 +54,7 @@ dependencies {
 	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
 	implementation "cz.jirutka.rsql:rsql-parser:${rsqlParserVersion}"
 	implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+	implementation 'io.github.resilience4j:resilience4j-spring-boot3'
 
 	// Dependencies required by the generated OpenAPI Feign client
 	implementation "io.github.openfeign:feign-core:13.5"
