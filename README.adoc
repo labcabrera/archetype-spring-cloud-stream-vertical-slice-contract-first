@@ -23,7 +23,7 @@ Pretende ser un punto de partida para microservicios que publican y consumen eve
 
 El prototipo incluye también una configuración de seguridad basada en OAuth2 Resource Server. Las llamadas a la API requieren de un token previamente emitido por un proveedor de identidad que será validado por la aplicación a través de la configuración JWT del IAM.
 
-Adicionalmente se ha integrado un cliente REST basado en Spring Cloud OpenFeign generado a partir de una definición OpenAPIpara consumir una API externa simulada.
+Adicionalmente se ha integrado un cliente REST basado en Spring Cloud OpenFeign generado a partir de una definición OpenAPIpara consumir una link:https://github.com/labcabrera/sample-user-api[API externa] simulada.
 
 TIP: En el caso de usar un enfoque _Code-First_ tenemos este mismo ejemplo en el siguiente link:https://github.com/labcabrera/archetype-spring-cloud-stream-vertical-slice[repositorio].
 
@@ -31,15 +31,14 @@ TIP: En el caso de usar un enfoque _Code-First_ tenemos este mismo ejemplo en el
 
 - Spring Boot 3.x (Java 21)
 - Spring Data JPA + Hibernate
-- Spring Cloud Stream + Kafka Binder
-- Spring Cloud OpenFeign
-- Jackson
-- MapStruct
-- Springdoc OpenAPI para documentación de la API REST
-- RSQL parser para filtros en endpoints REST
-- Redis para cacheo de datos
-- Resilience4j para tolerancia a fallos en clientes externos
-- Micrometer / Actuator
+- link:https://spring.io/projects/spring-cloud-stream[Spring Cloud Stream] + link:https://docs.spring.io/spring-cloud-stream/docs/current/reference/html/spring-cloud-stream-binder-kafka.html[Kafka Binder]
+- link:https://spring.io/projects/spring-cloud-openfeign[Spring Cloud OpenFeign] para clientes REST
+- link:https://mapstruct.org/[MapStruct] para mapeo de objetos
+- link:https://springdoc.org/[Springdoc OpenAPI] para documentación de la API REST
+- link:https://github.com/jirutka/rsql-parser[RSQL parser] para filtros en endpoints REST
+- link:https://redis.io/[Redis] para cacheo de datos
+- link:https://resilience4j.readme.io/docs/getting-started[Resilience4j] para tolerancia a fallos en el cliente REST
+- link:https://micrometer.io/[Micrometer] / link:https://docs.spring.io/spring-boot/reference/actuator/index.html[Actuator] para métricas y monitorización
 
 == Estructura del proyecto
 
