@@ -32,6 +32,10 @@ public class KafkaCaseStepController extends AuthenticatedConsumer {
                 var command = new CreateInitialCaseStepCommand(message.getPayload().id());
                 commandBus.dispatch(command);
             }
+            catch (Exception ex) {
+                //TODO handle exception properly
+                log.error("Error processing case folder created event", ex);
+            }
             finally {
                 SecurityContextHolder.clearContext();
             }
@@ -41,12 +45,16 @@ public class KafkaCaseStepController extends AuthenticatedConsumer {
     @Bean
     public Consumer<Message<CaseFolderDeletedEvent>> onCaseFolderDeleted() {
         return message -> {
-            log.debug("Received case folder created event: {}", message.getPayload().caseFolderId());
+            log.debug("Received case folder deleted event: {}", message.getPayload().caseFolderId());
             loadUserContext(message);
             try {
                 var caseFolderId = message.getPayload().caseFolderId();
                 var command = new DeleteCaseStepsByCaseFolderIdCommand(caseFolderId);
                 commandBus.dispatch(command);
+            }
+            catch (Exception ex) {
+                //TODO handle exception properly
+                log.error("Error processing case folder deleted event", ex);
             }
             finally {
                 SecurityContextHolder.clearContext();
