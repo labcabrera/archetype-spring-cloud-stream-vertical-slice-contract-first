@@ -42,8 +42,8 @@ public class UserClientAdapter implements UserClientPort {
         }
     }
 
-    public void getAssignedUserFallback(Throwable ex) {
-        log.error("Fallback triggered when fetching user", ex);
+    public String getAssignedUserFallback(StepType stepType, Throwable ex) {
+        log.error("Fallback triggered when fetching user for step type {}. Throwing exception", stepType);
         throw new AssignedUserReadException("user.client.err.fallback-error", ex);
     }
 

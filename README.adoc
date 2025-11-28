@@ -38,6 +38,7 @@ TIP: En el caso de usar un enfoque _Code-First_ tenemos este mismo ejemplo en el
 - Springdoc OpenAPI para documentación de la API REST
 - RSQL parser para filtros en endpoints REST
 - Redis para cacheo de datos
+- Resilience4j para tolerancia a fallos en clientes externos
 - Micrometer / Actuator
 
 == Estructura del proyecto
@@ -497,6 +498,43 @@ Añadiendo las anotaciones `@Cacheable`, `@CachePut` y `@CacheEvict` en los mét
 Si accedemos a la consola de Redis podemos ver que las entradas se almacenan correctamente serializadas en JSON:
 
 image::./images/redis.png[]
+
+=== Resilience4j
+
+En este ejemplo se ha integrado un ejemplo básico de Circuit Breaker utilizando la librería link:https://resilience4j.readme.io/docs[Resilience4j] para mejorar la tolerancia a fallos en las llamadas al cliente Feign que consume la API externa.
+
+En el método que consume la API externa se ha añadido la anotación `@CircuitBreaker` para definir el comportamiento del circuito:
+
+[source,java]
+----
+public class UserClientAdapter implements UserClientPort {
+
+    @CircuitBreaker(name = "cbUserApi", fallbackMethod = "getAssignedUserFallback")
+    public String getAssignedUser(StepType stepType) {
+        // Llamada al cliente Feign
+    }
+
+    public String getAssignedUserFallback(StepType stepType, Throwable ex) {
+        // Lógica de fallback en caso de fallo
+    }
+}
+----
+
+Después utilizamos la configuración de Resilience4j para definir los parámetros del circuito en el archivo `application-resilience4j.yaml`:
+
+[source,yaml]
+----
+resilience4j:
+  circuitbreaker:
+    instances:
+      cbUserApi:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 60s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+----
 
 === I18n
 
