@@ -71,7 +71,7 @@ dependencies {
 openApiGenerate {
     generatorName = "spring"
     inputSpec = "$rootDir/src/main/resources/api-definition.yaml"
-    outputDir = "$buildDir/generated/sources/openapi"
+    outputDir = "$buildDir/generated/sources/openapi/server"
     apiPackage = "com.labcabrera.sample.archetype.generated.api"
     modelPackage = "com.labcabrera.sample.archetype.generated.model"
     configOptions = [
@@ -99,7 +99,9 @@ tasks.register('openApiGenerateUserApi', org.openapitools.generator.gradle.plugi
 	invokerPackage = 'org.labcabrera.sample.archetype.generated.client.user'
 	configOptions = [
 		dateLibrary: 'java8',
-		//java8: 'true',
+		useJakartaEe: 'true',
+		useSpringBoot3: 'true',
+		openApiNullable: 'false',
 		library: 'resttemplate'
 	]
 	additionalProperties = [
@@ -107,7 +109,7 @@ tasks.register('openApiGenerateUserApi', org.openapitools.generator.gradle.plugi
 	]
 }
 
-sourceSets.main.java.srcDir file("$buildDir/generated/sources/openapi/src/main/java")
+sourceSets.main.java.srcDir file("$buildDir/generated/sources/openapi/server/src/main/java")
 sourceSets.main.java.srcDir file("$buildDir/generated/sources/openapi/user-client/src/main/java")
 
 tasks.named('compileJava') {
