@@ -23,13 +23,16 @@ Pretende ser un punto de partida para microservicios que publican y consumen eve
 
 El prototipo incluye también una configuración de seguridad basada en OAuth2 Resource Server. Las llamadas a la API requieren de un token previamente emitido por un proveedor de identidad que será validado por la aplicación a través de la configuración JWT del IAM.
 
+Adicionalmente se ha integrado un cliente REST basado en Spring Cloud OpenFeign generado a partir de una definición OpenAPIpara consumir una API externa simulada.
+
 TIP: En el caso de usar un enfoque _Code-First_ tenemos este mismo ejemplo en el siguiente link:https://github.com/labcabrera/archetype-spring-cloud-stream-vertical-slice[repositorio].
 
 == Tecnologías utilizadas
 
 - Spring Boot 3.x (Java 21)
-- Spring Cloud Stream + Kafka Binder
 - Spring Data JPA + Hibernate
+- Spring Cloud Stream + Kafka Binder
+- Spring Cloud OpenFeign
 - Jackson
 - MapStruct
 - Springdoc OpenAPI para documentación de la API REST
@@ -319,6 +322,52 @@ Dentro del _application.cqrs_ de cada vertical establecemos la estructura:
     │   └── queries: definición de queries
 ----
 
+=== Clientes Feign
+
+En este ejemplo se ha utilizado Spring Cloud OpenFeign para la comunicación con una API REST externa simulada.
+
+Para ello se ha utilizado el mismo plugin de generación de OpenAPI para generar el cliente Feign a partir de la definición OpenAPI 3.0 de la API externa añadiendo la siguiente configuración en el fichero _build.gradle_:
+
+[source,groovy]
+----
+tasks.register('openApiGenerateUserApi', org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+	generatorName = 'java'
+	library = "feign"
+	inputSpec = "$rootDir/src/main/resources/api-clients/user-api.yaml"
+	outputDir = "$buildDir/generated/sources/openapi/user-client"
+	apiPackage = 'org.labcabrera.sample.archetype.generated.client.user.api'
+	modelPackage = 'org.labcabrera.sample.archetype.generated.client.user.model'
+	invokerPackage = 'org.labcabrera.sample.archetype.generated.client.user'
+	configOptions = [
+		useSpringBoot3: 'true',
+		interfaceOnly: 'true',
+		useFeignClientUrls: 'true',
+		useFeignClientContextId: 'true',
+		useTags: 'true',
+		dateLibrary: 'java8',
+		useJakartaEe: 'true',
+		openApiNullable: 'false',
+	]
+	additionalProperties = [
+		serializableModel: 'true'
+	]
+}
+----
+
+Nuestra API está securizada del mismo modo que este proyecto de ejemplo de modo que para consumirla utilizaremos un token generado a partir `grant_type=password` con los credenciales de nuestra aplicación.
+
+Después, al crear la instancia de nuestro _ApiClient_ configuramos el interceptor de Feign para añadir el token a las peticiones:
+
+[source,java]
+----
+    UsersClientProperties.Oauth o = properties.getOauth();
+    OauthPasswordGrant oauth = new OauthPasswordGrant(o.getTokenUrl(), o.getScopes());
+    oauth.configure(o.getUsername(), o.getPassword(), o.getClientId(), o.getClientSecret());
+    apiClient.addAuthorization(properties.getAuthName(), oauth);
+    apiClient.registerAccessTokenListener(token ->
+        log.info("Users client obtained access token (expiresIn={}s)", token.getExpiresIn()));
+----
+
 === Springdoc
 
 En este caso el enfoque REST es _Contract-First_, por lo que las definiciones de los endpoints y modelos de datos se encuentran en el fichero _api-definition.yaml_.
@@ -528,6 +577,7 @@ Para ejecutar el análisis de SonarQube deberemos crear un token en nuestra inst
 
 - link:https://spring.io/projects/spring-boot[Spring Boot]
 - link:https://spring.io/projects/spring-cloud-stream[Spring Cloud Stream]
+- link:https://spring.io/projects/spring-cloud-openfeign[Spring Cloud OpenFeign]
 - link:https://8thlight.com/blog/uncle-bob/2012/08/13/the-clean-architecture.html[Clean Architecture]
 - link:https://mapstruct.org/[MapStruct]
 - link:https://github.com/jirutka/rsql-parser[RSQL Parser]
