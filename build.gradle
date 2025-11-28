@@ -44,6 +44,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 	implementation 'org.springframework.cloud:spring-cloud-stream'
 	implementation 'org.springframework.cloud:spring-cloud-stream-binder-kafka'
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
@@ -75,6 +76,7 @@ openApiGenerate {
     apiPackage = "com.labcabrera.sample.archetype.generated.api"
     modelPackage = "com.labcabrera.sample.archetype.generated.model"
     configOptions = [
+		library 			: "spring-cloud",
         dateLibrary         : "java8",
         interfaceOnly       : "true",
         useTags             : "true",
@@ -92,17 +94,21 @@ openApiGenerate {
 // Additional OpenAPI Generator task: generate a Java REST client from api-clients/user-api.yaml
 tasks.register('openApiGenerateUserApi', org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
 	generatorName = 'java'
+	library = "feign"
 	inputSpec = "$rootDir/src/main/resources/api-clients/user-api.yaml"
 	outputDir = "$buildDir/generated/sources/openapi/user-client"
 	apiPackage = 'org.labcabrera.sample.archetype.generated.client.user.api'
 	modelPackage = 'org.labcabrera.sample.archetype.generated.client.user.model'
 	invokerPackage = 'org.labcabrera.sample.archetype.generated.client.user'
 	configOptions = [
+		useSpringBoot3: 'true',
+		interfaceOnly: 'true',
+		useFeignClientUrls: 'true',
+		useFeignClientContextId: 'true',
+		useTags: 'true',
 		dateLibrary: 'java8',
 		useJakartaEe: 'true',
-		useSpringBoot3: 'true',
 		openApiNullable: 'false',
-		library: 'resttemplate'
 	]
 	additionalProperties = [
 		serializableModel: 'true'
