@@ -136,31 +136,11 @@ spring:
           destination: sample.case-folders.creation.v1
           group: case-folders-svc
           contentType: application/json
-        onCaseFolderCreated-in-0:
-          destination: sample.case-folders.created.v1
-          group: case-folders-svc
-          contentType: application/json
-        onCaseFolderDeleted-in-0:
-          destination: sample.case-folders.deleted.v1
-          group: case-folders-svc
-          contentType: application/json
-        onCaseStepCreated-in-0:
-          destination: sample.case-steps.created.v1
-          group: case-folders-svc
-          contentType: application/json
         # output bindings
         caseFolderCreated-out-0:
           destination: sample.case-folders.created.v1
           contentType: application/json
-        caseFolderUpdated-out-0:
-          destination: sample.case-folders.updated.v1
-          contentType: application/json
-        caseFolderDeleted-out-0:
-          destination: sample.case-folders.deleted.v1
-          contentType: application/json
-        caseStepCreated-out-0:
-          destination: sample.case-steps.created.v1
-          contentType: application/json
+        # ...
       kafka:
         binder:
           brokers: ${KAFKA_BROKERS:localhost:9092}
@@ -193,6 +173,55 @@ En este ejemplo los topics se consideran seguros (la publicación de los eventos
 image::./images/apache-ui-headers.png[]
 
 TIP: Usando Spring Cloud Stream evitamos que nuestro código tenga dependencias directas con la API de Kafka de modo que puede ser fácilmente adaptado a otros sistemas de mensajería compatibles con Spring Cloud Stream como por ejemplo RabbitMQ, AWS SQS, etc, cambiando únicamente las dependencias y el fichero de configuración.
+
+==== Gestión de errores y reintentos
+
+A través de la configuración de Spring Cloud Stream podemos definir las políticas de reintento como por ejemplo:
+
+[source,yaml]
+----
+spring:
+  cloud:
+    stream:
+      bindings:
+        onCaseFolderCreated-in-0:
+          destination: sample.case-folders.created.v1
+          group: case-folders-svc
+          contentType: application/json
+          consumer:
+            max-attempts: 3
+            back-off-initial-interval: 500
+            back-off-max-interval: 10000
+            back-off-multiplier: 2.0
+            default-retryable: false
+            retryable-exceptions:
+              org.labcabrera.sample.archetype.shared.domain.exceptions.BadRequestException: false
+----
+
+Donde podemos configurar el número máximo de reintentos, el intervalo entre reintentos y las excepciones que consideramos retryables o no.
+
+También podemos configurar una Dead Letter Queue (DLQ) para los mensajes que no se han podido procesar tras los reintentos:
+
+[source,yaml]
+----
+spring:
+  cloud:
+    function:
+      definition: onCaseFolderCreation;onCaseFolderCreated;onCaseFolderDeleted;onCaseStepCreated
+    stream:
+      # ...
+      kafka:
+        binder:
+          brokers: ${KAFKA_BROKERS:localhost:9092}
+          autoCreateTopics: true
+          minPartitionCount: 1
+        bindings:
+          onCaseFolderCreated-in-0:
+            consumer:
+              enable-dlq: true
+              dlq-name: sample.case-folders.created.v1.dlq
+              dlq-partitions: 1
+----
 
 === Seguridad
 

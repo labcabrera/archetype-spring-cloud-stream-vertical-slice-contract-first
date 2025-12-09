@@ -32,10 +32,6 @@ public class KafkaCaseStepController extends AuthenticatedConsumer {
                 var command = new CreateInitialCaseStepCommand(message.getPayload().id());
                 commandBus.dispatch(command);
             }
-            catch (Exception ex) {
-                //TODO handle exception properly
-                log.error("Error processing case folder created event", ex);
-            }
             finally {
                 SecurityContextHolder.clearContext();
             }
