@@ -18,10 +18,9 @@ spring:
             back-off-initial-interval: 500
             back-off-max-interval: 10000
             back-off-multiplier: 2.0
-            default-retryable: false
+            default-retryable: true
             retryable-exceptions:
               org.labcabrera.sample.archetype.shared.domain.exceptions.BadRequestException: false
-            
         onCaseFolderDeleted-in-0:
           destination: sample.case-folders.deleted.v1
           group: case-folders-svc
@@ -52,5 +51,5 @@ spring:
           onCaseFolderCreated-in-0:
             consumer:
               enable-dlq: true
-              dlq-name: sample.case-folders.created.v1.dlq
+              dlq-name: sample.case-folders.created.dlq.v1
               dlq-partitions: 1
