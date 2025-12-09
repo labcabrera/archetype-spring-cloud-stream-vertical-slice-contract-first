@@ -193,12 +193,12 @@ spring:
             back-off-initial-interval: 500
             back-off-max-interval: 10000
             back-off-multiplier: 2.0
-            default-retryable: false
+            default-retryable: true
             retryable-exceptions:
               org.labcabrera.sample.archetype.shared.domain.exceptions.BadRequestException: false
 ----
 
-Donde podemos configurar el número máximo de reintentos, el intervalo entre reintentos y las excepciones que consideramos retryables o no.
+Donde podemos configurar el número máximo de reintentos, el intervalo entre reintentos y las excepciones que consideramos retryables o no. En este ejemplo haremos tres reintentos exponenciales empezando en 500ms y llegando hasta 10s. Además, las excepciones de tipo `BadRequestException` no serán reintentadas.
 
 También podemos configurar una Dead Letter Queue (DLQ) para los mensajes que no se han podido procesar tras los reintentos:
 
@@ -219,9 +219,11 @@ spring:
           onCaseFolderCreated-in-0:
             consumer:
               enable-dlq: true
-              dlq-name: sample.case-folders.created.v1.dlq
+              dlq-name: sample.case-folders.created.dlq.v1
               dlq-partitions: 1
 ----
+
+En este caso, si después de los reintentos el mensaje no se ha podido procesar, será enviado al topic `sample.case-folders.created.dlq.v1` para su posterior análisis o tratamiento.
 
 === Seguridad
 
