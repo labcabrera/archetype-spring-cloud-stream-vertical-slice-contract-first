@@ -2,38 +2,43 @@
 set -euo pipefail
 
 usage() {
-  cat <<EOF
+	cat <<EOF
 Usage: $0 <version>
 
-Create a git-flow release branch from 'develop' and push it to origin.
-This script configures git-flow to use 'main' as the production branch
-and 'develop' as the development branch (local git config).
+Create and finish a git-flow release using 'develop' as source and
+merge the release into 'main'. The script will push the resulting
+main branch and the created tag to origin.
 
 Example:
-  $0 1.2.0
+	$0 0.1.0
 
 Requirements:
-  - git
-  - git-flow (git-flow AVH or equivalent)
+	- git
+	- git-flow (AVH git-flow or equivalent)
 EOF
-  exit 1
+	exit 1
 }
 
 if [ "${#}" -ne 1 ]; then
-  usage
+	usage
 fi
 
 VERSION="$1"
 
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-  echo "Not inside a git repository." >&2
-  exit 2
+	echo "Not inside a git repository." >&2
+	exit 2
 fi
 
 if [ -n "$(git status --porcelain)" ]; then
-  echo "Working tree is not clean. Commit or stash changes before creating a release." >&2
-  git status --porcelain
-  exit 3
+	echo "Working tree is not clean. Commit or stash changes before creating a release." >&2
+	git status --porcelain
+	exit 3
+fi
+
+if ! command -v git >/dev/null 2>&1; then
+	echo "git not found in PATH" >&2
+	exit 4
 fi
 
 echo "Configuring git-flow to use 'main' and 'develop' (local config)..."
@@ -54,17 +59,25 @@ RELEASE_BRANCH="release/$VERSION"
 echo "Pushing release branch to origin: $RELEASE_BRANCH"
 git push -u origin "$RELEASE_BRANCH"
 
+echo "Finishing git-flow release: $VERSION (this will merge into 'main' and 'develop' and create tag '$VERSION')"
+# Finish the release; suppress prompts if git-flow supports non-interactive finish
+git flow release finish "$VERSION"
+
+echo "Pushing 'main' branch to origin..."
+git push origin main
+
+echo "Pushing 'develop' branch to origin..."
+git push origin develop
+
+echo "Pushing tag '$VERSION' to origin..."
+git push origin "refs/tags/$VERSION"
+
 cat <<EOF
-Done. Release branch '$RELEASE_BRANCH' created and pushed.
+Done. Release '$VERSION' finished, 'main' and 'develop' pushed, and tag '$VERSION' pushed to origin.
 
-Next steps (examples):
-  - Finish the release locally and merge to 'main':
-      git flow release finish "$VERSION"
-  - Push the resulting tag and main branch to origin:
-      git push origin main --follow-tags
-
-If you prefer to create a PR instead of finishing locally, open a PR from
-'$RELEASE_BRANCH' into 'main' and follow your normal release process.
+If your workflow uses pull requests instead of finishing locally, consider
+starting the release branch and opening a PR from '$RELEASE_BRANCH' into 'main' instead.
 EOF
 
 exit 0
+
