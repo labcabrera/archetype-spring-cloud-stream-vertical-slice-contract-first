@@ -2,7 +2,8 @@ springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
-    path: /swagger-ui.html
+    # Use the base path so the UI index is available at /swagger-ui/index.html
+    path: /swagger-ui
     operationsSorter: alpha
     tagsSorter: alpha
     oauth:
