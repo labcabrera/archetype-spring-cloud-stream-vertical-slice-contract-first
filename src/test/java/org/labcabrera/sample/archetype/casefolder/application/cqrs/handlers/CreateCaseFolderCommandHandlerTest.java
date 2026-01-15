@@ -19,6 +19,7 @@ import org.labcabrera.sample.archetype.casefolder.application.ports.CaseFolderEv
 import org.labcabrera.sample.archetype.casefolder.application.ports.CaseFolderMetricPort;
 import org.labcabrera.sample.archetype.casefolder.application.ports.CaseFolderRepository;
 import org.labcabrera.sample.archetype.casefolder.domain.CaseFolder;
+import org.labcabrera.sample.archetype.casefolder.domain.UserInfo;
 import org.labcabrera.sample.archetype.casefolder.domain.IdCard;
 import org.labcabrera.sample.archetype.casefolder.domain.IdCardType;
 import org.labcabrera.sample.archetype.casefolder.domain.events.CaseFolderCreatedEvent;
@@ -65,6 +66,7 @@ class CreateCaseFolderCommandHandlerTest {
     private CreateCaseFolderCommand command;
     private AuthenticatedUser authenticatedUser;
     private CaseFolder caseFolder;
+    private UserInfo userInfo;
 
     @BeforeEach
     void setUp() {
@@ -81,14 +83,15 @@ class CreateCaseFolderCommandHandlerTest {
             Set.of("case-folder-management"),
             Collections.emptySet());
 
-        caseFolder = CaseFolder.create(
-            command.name(),
-            command.firstSurname(),
-            command.lastSurname(),
-            new IdCard(
-                command.idCardNumber(),
-                command.idCardType()),
-            authenticatedUser.username());
+        userInfo = UserInfo.builder()
+            .id(null)
+            .name(command.name())
+            .firstSurname(command.firstSurname())
+            .lastSurname(java.util.Optional.ofNullable(command.lastSurname()))
+            .idCard(new IdCard(command.idCardNumber(), command.idCardType()))
+            .build();
+
+        caseFolder = CaseFolder.create(userInfo, authenticatedUser.username());
     }
 
     @Test
@@ -100,11 +103,11 @@ class CreateCaseFolderCommandHandlerTest {
         CaseFolder result = handler.handle(command);
 
         assertNotNull(result);
-        assertEquals(command.name().toUpperCase(), result.getName());
-        assertEquals(command.firstSurname().toUpperCase(), result.getFirstSurname());
-        assertEquals(command.lastSurname().toUpperCase(), result.getLastSurname());
-        assertEquals(command.idCardNumber().toUpperCase(), result.getIdCard().idCardNumber());
-        assertEquals(command.idCardType(), result.getIdCard().idCardType());
+        assertEquals(command.name().toUpperCase(), result.getUserInfo().getName());
+        assertEquals(command.firstSurname().toUpperCase(), result.getUserInfo().getFirstSurname());
+        assertEquals(command.lastSurname().toUpperCase(), result.getUserInfo().getLastSurname().orElse(null));
+        assertEquals(command.idCardNumber().toUpperCase(), result.getUserInfo().getIdCard().idCardNumber());
+        assertEquals(command.idCardType(), result.getUserInfo().getIdCard().idCardType());
 
         verify(securityPort).requireCurrentUser();
         verify(caseFolderGuard).checkCreate(authenticatedUser);

@@ -13,6 +13,14 @@ spring:
           destination: sample.case-folders.created.v1
           group: case-folders-svc
           contentType: application/json
+          consumer:
+            max-attempts: 5
+            back-off-initial-interval: 500
+            back-off-max-interval: 10000
+            back-off-multiplier: 2.0
+            default-retryable: true
+            retryable-exceptions:
+              org.labcabrera.sample.archetype.shared.domain.exceptions.BadRequestException: false
         onCaseFolderDeleted-in-0:
           destination: sample.case-folders.deleted.v1
           group: case-folders-svc
@@ -39,3 +47,9 @@ spring:
           brokers: ${KAFKA_BROKERS:localhost:9092}
           autoCreateTopics: true
           minPartitionCount: 1
+        bindings:
+          onCaseFolderCreated-in-0:
+            consumer:
+              enable-dlq: true
+              dlq-name: sample.case-folders.created.dlq.v1
+              dlq-partitions: 1

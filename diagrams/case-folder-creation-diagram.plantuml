@@ -11,11 +11,15 @@ participant "CreateCaseFolderHandler\n(Application)" as CreateCaseFolderHandler
 participant "UpdateCaseFolderHandler\n(Application)" as UpdateCaseFolderHandler
 participant "CaseFolder Repository\n(Infrastructure)" as CaseFolderRepository
 participant "CaseStep Initialization Consumer\n(Infrastructure)" as CaseStepConsumer
-participant "CaseStep CQRS Handler\n(Application)" as ConfService
+participant "CaseStep CQRS Handler\n(Application)" as CaseStepHandler
 participant "CaseStep Initialization Repository\n(Infrastructure)" as CaseStepRepository
 participant "Database" as DB
 participant "Kafka" as Kafka
 participant "Redis" as Redis
+participant "Keycloak" as Keycloak
+participant "User API" as UserAPI
+
+== CaseFolder creation (API request) ==
 
 Client -> CaseFolderController: POST /case-folders
 activate CaseFolderController
@@ -48,37 +52,48 @@ deactivate CreateCaseFolderHandler
 CaseFolderController --> Client: 201 Created
 deactivate CaseFolderController
 
-' Case step creation
+== CaseStep processing (Kafka activated event) ==
+
 Kafka -> CaseStepConsumer: consume CaseFolderCreatedEvent
 activate Kafka
 activate CaseStepConsumer
 CaseStepConsumer -> CaseStepConsumer: readUserFromHeaders()
 deactivate Kafka
 
-CaseStepConsumer -> ConfService: processCaseFolderCreated(event)
-activate ConfService
+CaseStepConsumer -> CaseStepHandler: processCaseFolderCreated(event)
+activate CaseStepHandler
 
-ConfService -> CaseStepRepository: save(CaseStep)
+CaseStepHandler -> Keycloak: obtain access token
+activate Keycloak
+Keycloak --> CaseStepHandler: access token
+deactivate Keycloak
+CaseStepHandler -> UserAPI: get users (HTTP + JWT)
+activate UserAPI
+UserAPI --> CaseStepHandler: users list
+deactivate UserAPI
+
+CaseStepHandler -> CaseStepRepository: save(CaseStep)
 activate CaseStepRepository
 CaseStepRepository -> DB: INSERT case_step
 activate DB
 DB --> CaseStepRepository: case_step saved
 deactivate DB
-CaseStepRepository --> ConfService: CaseStep entity
+CaseStepRepository --> CaseStepHandler: CaseStep entity
 CaseStepRepository -> Redis: cache(case_step)
 activate Redis
 deactivate Redis
 deactivate CaseStepRepository
-ConfService -> Kafka: publish CaseStepCreatedEvent
+CaseStepHandler -> Kafka: publish CaseStepCreatedEvent
 activate Kafka
-Kafka --> ConfService: ack
+Kafka --> CaseStepHandler: ack
 deactivate Kafka
 
-ConfService --> CaseStepConsumer: processed
-deactivate ConfService
+CaseStepHandler --> CaseStepConsumer: processed
+deactivate CaseStepHandler
 deactivate CaseStepConsumer
 
-' Update case folder status
+== Update case folder (Kafka activated event) ==
+
 Kafka -> UpdateCaseFolderHandler: consume CaseStepCreatedEvent
 activate Kafka
 deactivate Kafka

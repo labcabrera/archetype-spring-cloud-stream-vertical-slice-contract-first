@@ -321,13 +321,12 @@ components:
           example: Field is required
       description: API error detail
     CaseFolderDto:
+      description: Case folder information
       required:
-        - firstSurname
         - id
-        - idCard
-        - name
-        - owner
+        - userInfo
         - status
+        - owner
       type: object
       properties:
         id:
@@ -343,6 +342,20 @@ components:
             - ACTIVE
             - CLOSED
             - DELETED
+        userInfo:
+          $ref: '#/components/schemas/UserInfoDto'
+        owner:
+          type: string
+          description: Entity owner
+          example: john.doe
+    UserInfoDto:
+      description: User information
+      required:
+        - firstSurname
+        - name
+        - idCard
+      type: object
+      properties:
         name:
           type: string
           description: Name
@@ -357,11 +370,6 @@ components:
           example: Smith
         idCard:
           $ref: '#/components/schemas/IdCardDto'
-        owner:
-          type: string
-          description: Entity owner
-          example: john.doe
-      description: Case folder information
     UpdateCaseFolderRequest:
       type: object
       properties:

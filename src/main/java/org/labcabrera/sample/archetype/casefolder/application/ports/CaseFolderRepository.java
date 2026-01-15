@@ -16,7 +16,7 @@ public interface CaseFolderRepository {
 
     CaseFolder save(CaseFolder entity);
 
-    CaseFolder update(CaseFolder entity);
+    CaseFolder update(String caseFolderId, CaseFolder updatedData);
 
     CaseFolder updateStatus(String caseFolderId, CaseFolderStatus status);
 

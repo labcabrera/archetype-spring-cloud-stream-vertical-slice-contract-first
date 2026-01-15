@@ -15,23 +15,30 @@ image:https://img.shields.io/badge/Kafka-3.4-green.svg[Kafka 3.4,link="https://k
 
 == Introducción
 
-Este proyecto es un prototipo que muestra una aplicación Java Spring Boot diseñada siguiendo principios de Clean Architecture (hexagonal / ports & adapters) y usando Spring Cloud Stream para integración con Kafka en un enfoque "vertical slices" (cada módulo contiene sus capas: domain, application, infrastructure e interfaces).
+Este proyecto es un prototipo que muestra una aplicación Java Spring Boot diseñada siguiendo principios de link:https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html[Clean Architecture] y usando link:https://spring.io/projects/spring-cloud-stream[Spring Cloud Stream] para integración con Kafka en un enfoque "vertical slices" (cada módulo contiene sus capas: domain, application, infrastructure e interfaces).
 
-Pretende ser un punto de partida para microservicios que publican y consumen eventos, usando JPA para la persistencia, CQRS para la integración de commands y queries. El prototipo está pensado para equipos de desarrollo que no estén familiarizados con conceptos de DDD o event sourcing tales como link:https://www.axoniq.io/framework[Axon] o link:https://eventuate.io/abouteventuatetram.html[Eventuate Tram] y se enfoquen en la implementación de la lógica de  negocio.
+En este ejemplo se implementa una API rest usando el enfoque _Contract First_, definiendo los endpoints y modelos de datos a través de OpenAPI 3.x dentro del fichero link:https://raw.githubusercontent.com/labcabrera/archetype-spring-cloud-stream-vertical-slice-contract-first/refs/heads/develop/src/main/resources/api-definition.yaml[api-definition.yaml] y se utiliza el plugin link:https://plugins.gradle.org/plugin/org.openapi.generator[org.openapi.generator] para generar los DTOs y controladores usando el link:https://openapi-generator.tech/docs/generators/spring/[generador de Spring].
+
+Pretende ser un punto de partida para microservicios que publican y consumen eventos, usando JPA para la persistencia, CQRS para la integración de commands y queries. El prototipo está pensado para equipos de desarrollo que *no estén familiarizados con conceptos de DDD o event sourcing* tales como link:https://www.axoniq.io/framework[Axon] o link:https://eventuate.io/abouteventuatetram.html[Eventuate Tram] y se enfoquen en la implementación de la lógica de  negocio con un enfoque tradicional de servicios.
 
 El prototipo incluye también una configuración de seguridad basada en OAuth2 Resource Server. Las llamadas a la API requieren de un token previamente emitido por un proveedor de identidad que será validado por la aplicación a través de la configuración JWT del IAM.
+
+Adicionalmente se ha integrado un cliente REST basado en Spring Cloud OpenFeign generado a partir de una definición OpenAPIpara consumir una link:https://github.com/labcabrera/sample-user-api[API externa] simulada.
+
+TIP: En el caso de usar un enfoque _Code-First_ tenemos este mismo ejemplo en el siguiente link:https://github.com/labcabrera/archetype-spring-cloud-stream-vertical-slice[repositorio].
 
 == Tecnologías utilizadas
 
 - Spring Boot 3.x (Java 21)
-- Spring Cloud Stream + Kafka binder
 - Spring Data JPA + Hibernate
-- Jackson
-- MapStruct
-- Springdoc OpenAPI para documentación de la API REST
-- RSQL parser para filtros en endpoints REST
-- Redis para cacheo de datos
-- Micrometer / Actuator
+- link:https://spring.io/projects/spring-cloud-stream[Spring Cloud Stream] + link:https://docs.spring.io/spring-cloud-stream/docs/current/reference/html/spring-cloud-stream-binder-kafka.html[Kafka Binder]
+- link:https://spring.io/projects/spring-cloud-openfeign[Spring Cloud OpenFeign] para clientes REST
+- link:https://mapstruct.org/[MapStruct] para mapeo de objetos
+- link:https://springdoc.org/[Springdoc] para documentación de la API REST
+- link:https://github.com/jirutka/rsql-parser[RSQL parser] para filtros en endpoints REST
+- link:https://redis.io/[Redis] para cacheo de datos
+- link:https://resilience4j.readme.io/docs/getting-started[Resilience4j] para tolerancia a fallos en el cliente REST
+- link:https://micrometer.io/[Micrometer] / link:https://docs.spring.io/spring-boot/reference/actuator/index.html[Actuator] para métricas y monitorización
 
 == Estructura del proyecto
 
@@ -129,31 +136,11 @@ spring:
           destination: sample.case-folders.creation.v1
           group: case-folders-svc
           contentType: application/json
-        onCaseFolderCreated-in-0:
-          destination: sample.case-folders.created.v1
-          group: case-folders-svc
-          contentType: application/json
-        onCaseFolderDeleted-in-0:
-          destination: sample.case-folders.deleted.v1
-          group: case-folders-svc
-          contentType: application/json
-        onCaseStepCreated-in-0:
-          destination: sample.case-steps.created.v1
-          group: case-folders-svc
-          contentType: application/json
         # output bindings
         caseFolderCreated-out-0:
           destination: sample.case-folders.created.v1
           contentType: application/json
-        caseFolderUpdated-out-0:
-          destination: sample.case-folders.updated.v1
-          contentType: application/json
-        caseFolderDeleted-out-0:
-          destination: sample.case-folders.deleted.v1
-          contentType: application/json
-        caseStepCreated-out-0:
-          destination: sample.case-steps.created.v1
-          contentType: application/json
+        # ...
       kafka:
         binder:
           brokers: ${KAFKA_BROKERS:localhost:9092}
@@ -186,6 +173,57 @@ En este ejemplo los topics se consideran seguros (la publicación de los eventos
 image::./images/apache-ui-headers.png[]
 
 TIP: Usando Spring Cloud Stream evitamos que nuestro código tenga dependencias directas con la API de Kafka de modo que puede ser fácilmente adaptado a otros sistemas de mensajería compatibles con Spring Cloud Stream como por ejemplo RabbitMQ, AWS SQS, etc, cambiando únicamente las dependencias y el fichero de configuración.
+
+==== Gestión de errores y reintentos
+
+A través de la configuración de Spring Cloud Stream podemos definir las políticas de reintento como por ejemplo:
+
+[source,yaml]
+----
+spring:
+  cloud:
+    stream:
+      bindings:
+        onCaseFolderCreated-in-0:
+          destination: sample.case-folders.created.v1
+          group: case-folders-svc
+          contentType: application/json
+          consumer:
+            max-attempts: 3
+            back-off-initial-interval: 500
+            back-off-max-interval: 10000
+            back-off-multiplier: 2.0
+            default-retryable: true
+            retryable-exceptions:
+              org.labcabrera.sample.archetype.shared.domain.exceptions.BadRequestException: false
+----
+
+Donde podemos configurar el número máximo de reintentos, el intervalo entre reintentos y las excepciones que consideramos retryables o no. En este ejemplo haremos tres reintentos exponenciales empezando en 500ms y llegando hasta 10s. Además, las excepciones de tipo `BadRequestException` no serán reintentadas.
+
+También podemos configurar una Dead Letter Queue (DLQ) para los mensajes que no se han podido procesar tras los reintentos:
+
+[source,yaml]
+----
+spring:
+  cloud:
+    function:
+      definition: onCaseFolderCreation;onCaseFolderCreated;onCaseFolderDeleted;onCaseStepCreated
+    stream:
+      # ...
+      kafka:
+        binder:
+          brokers: ${KAFKA_BROKERS:localhost:9092}
+          autoCreateTopics: true
+          minPartitionCount: 1
+        bindings:
+          onCaseFolderCreated-in-0:
+            consumer:
+              enable-dlq: true
+              dlq-name: sample.case-folders.created.dlq.v1
+              dlq-partitions: 1
+----
+
+En este caso, si después de los reintentos el mensaje no se ha podido procesar, será enviado al topic `sample.case-folders.created.dlq.v1` para su posterior análisis o tratamiento.
 
 === Seguridad
 
@@ -288,6 +326,15 @@ Se ha utilizado la libreria link:https://github.com/jirutka/rsql-parser[rsql-par
 
 Se ha añadido el operador `=re=` para búsquedas "contiene" (like %value%) en strings.
 
+La implementación del visitor personalizado `CustomRsqlVisitor` realiza el mapeo de los nodos RSQL a especificaciones JPA y nos permite combinar
+búsqueda dentro de entidades relacionadas, por ejemplo:
+
+----
+userInfo.idCard.idCardNumber==50537477Z
+----
+
+Donde _userInfo_ está mapeado como un _@ManyToOne_ dentro de _CaseFolderEntity_ y _idCard_ es un _@Embedded_ dentro de _UserInfoEntity_.
+
 === CQRS
 
 Se ha adoptado un enfoque CQRS básico en la capa de aplicación, separando comandos (modificaciones de estado) y consultas (lecturas). Cada comando tiene su propio handler que encapsula la lógica de negocio asociada.
@@ -306,30 +353,81 @@ Dentro del _application.cqrs_ de cada vertical establecemos la estructura:
     │   └── queries: definición de queries
 ----
 
-=== Springdoc
+=== Clientes Feign
 
-En este caso el enfoque REST es _code-first_, por lo que se ha utilizado anotaciones en los controladores para definir los endpoints y sus contratos.
+En este ejemplo se ha utilizado Spring Cloud OpenFeign para la comunicación con una API REST externa simulada.
 
-Podemos consultar la API localmente en `http://localhost:8082/swagger-ui.html`
+Para ello se ha utilizado el mismo plugin de generación de OpenAPI para generar el cliente Feign a partir de la definición OpenAPI 3.0 de la API externa añadiendo la siguiente configuración en el fichero _build.gradle_:
 
-Las anotaciones se han definido en una interface _{controller}Definition_ que será implementada por nuestro controlador. De este modo separamos la definición del contrato de la implementación.
+[source,groovy]
+----
+tasks.register('openApiGenerateUserApi', org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+	generatorName = 'java'
+	library = "feign"
+	inputSpec = "$rootDir/src/main/resources/api-clients/user-api.yaml"
+	outputDir = "$buildDir/generated/sources/openapi/user-client"
+	apiPackage = 'org.labcabrera.sample.archetype.generated.client.user.api'
+	modelPackage = 'org.labcabrera.sample.archetype.generated.client.user.model'
+	invokerPackage = 'org.labcabrera.sample.archetype.generated.client.user'
+	configOptions = [
+		useSpringBoot3: 'true',
+		interfaceOnly: 'true',
+		useFeignClientUrls: 'true',
+		useFeignClientContextId: 'true',
+		useTags: 'true',
+		dateLibrary: 'java8',
+		useJakartaEe: 'true',
+		openApiNullable: 'false',
+	]
+	additionalProperties = [
+		serializableModel: 'true'
+	]
+}
+----
 
-Hemos añadido también una configuración personalizada de OpenAPI para definir la seguridad OAuth2 en la documentación para usar tanto un Bearer token como el flujo Authorization Code añadiendo en la configuracion de OpenAPI lo siguiente:
+Nuestra API está securizada del mismo modo que este proyecto de ejemplo de modo que para consumirla utilizaremos un token generado a partir `grant_type=password` con los credenciales de nuestra aplicación.
+
+Después, al crear la instancia de nuestro _ApiClient_ configuramos el interceptor de Feign para añadir el token a las peticiones:
 
 [source,java]
 ----
-		components.addSecuritySchemes(("oidc"), new SecurityScheme()
-			.type(SecurityScheme.Type.OAUTH2)
-			.description("OAuth2 con OIDC contra IAM")
-			.flows(new OAuthFlows()
-				.authorizationCode(new OAuthFlow()
-					.authorizationUrl(authorizationUrl)
-					.tokenUrl(tokenUrl)
-					.scopes(new Scopes()
-						.addString("openid", "OpenID scope")
-						.addString("profile", "User profile scope")
-						.addString("api", "API access scope")))));
+    UsersClientProperties.Oauth o = properties.getOauth();
+    OauthPasswordGrant oauth = new OauthPasswordGrant(o.getTokenUrl(), o.getScopes());
+    oauth.configure(o.getUsername(), o.getPassword(), o.getClientId(), o.getClientSecret());
+    apiClient.addAuthorization(properties.getAuthName(), oauth);
+    apiClient.registerAccessTokenListener(token ->
+        log.info("Users client obtained access token (expiresIn={}s)", token.getExpiresIn()));
 ----
+
+=== Springdoc
+
+En este caso el enfoque REST es _Contract-First_, por lo que las definiciones de los endpoints y modelos de datos se encuentran en el fichero _api-definition.yaml_.
+
+Se ha utilizado la librería link:https://springdoc.org/[Springdoc OpenAPI] para generar la documentación de la API REST basada en OpenAPI 3.0.
+
+La configuración del plugin de Gradle utilizada es:
+
+[source,groovy]
+----
+openApiGenerate {
+    generatorName = "spring"
+    inputSpec = "$projectDir/src/main/resources/api-definition.yaml"
+    outputDir = "$buildDir/generated/openapi"
+    apiPackage = "org.labcabrera.sample.archetype.interfaces.api"
+    modelPackage = "org.labcabrera.sample.archetype.interfaces.model"
+    configOptions = [
+        interfaceOnly: "true",
+        dateLibrary: "java8",
+        useBeanValidation: "true",
+        library: "spring-boot",
+        delegatePattern: "true",
+        useOptional: "true",
+        performBeanValidation: "true"
+    ]
+}
+----
+
+Dentro de cada vertical, los controladores REST extienden de las interfaces generadas por Springdoc y se implementan los métodos correspondientes mapeando los objetos del dominio a los DTOs generados usando MapStruct.
 
 === Mapeo de campos
 
@@ -431,6 +529,43 @@ Si accedemos a la consola de Redis podemos ver que las entradas se almacenan cor
 
 image::./images/redis.png[]
 
+=== Resilience4j
+
+En este ejemplo se ha integrado un ejemplo básico de Circuit Breaker utilizando la librería link:https://resilience4j.readme.io/docs[Resilience4j] para mejorar la tolerancia a fallos en las llamadas al cliente Feign que consume la API externa.
+
+En el método que consume la API externa se ha añadido la anotación `@CircuitBreaker` para definir el comportamiento del circuito:
+
+[source,java]
+----
+public class UserClientAdapter implements UserClientPort {
+
+    @CircuitBreaker(name = "cbUserApi", fallbackMethod = "getAssignedUserFallback")
+    public String getAssignedUser(StepType stepType) {
+        // Llamada al cliente Feign
+    }
+
+    public String getAssignedUserFallback(StepType stepType, Throwable ex) {
+        // Lógica de fallback en caso de fallo
+    }
+}
+----
+
+Después utilizamos la configuración de Resilience4j para definir los parámetros del circuito en el archivo `application-resilience4j.yaml`:
+
+[source,yaml]
+----
+resilience4j:
+  circuitbreaker:
+    instances:
+      cbUserApi:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 60s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+----
+
 === I18n
 
 Los mensajes de error y validación se han externalizado en archivos de propiedades para facilitar la internacionalización (i18n). Actualmente solo está el archivo `messages.properties` en inglés, pero se pueden agregar más archivos para otros idiomas.
@@ -443,19 +578,35 @@ A través de la propiedad HTTP _Accept-Language_ se puede especificar el idioma 
 
 En el proyecto se ha incluido soporte para métricas y monitorización utilizando Spring Boot Actuator y Micrometer con Prometheus como backend.
 
-En los servicios que queramos monitorizar podemos inyectar el registry de Micrometer y definir nuestras propias métricas personalizadas. Por ejemplo, en el servicio de creación de expedientes se ha añadido un contador para medir el número de expedientes creados:
+Se ha creado un _port_ para la definición de las métricas personalizadas y un adapter basado en Micrometer:
 
 [source,java]
 ----
-    private final MeterRegistry meterRegistry;
-    private Counter caseFolderCreatedCounter;
+public class CaseFolderMetricAdapter implements CaseFolderMetricPort {
 
-    @PostConstruct
-    private void initMetrics() {
+    private final Counter caseFolderCreatedCounter;
+    private final Counter caseFolderUpdatedCounter;
+    private final Counter caseFolderDeletedCounter;
+
+    public CaseFolderMetricAdapter(MeterRegistry meterRegistry) {
         caseFolderCreatedCounter = Counter.builder("casefoldercreated")
             .description("Number of case folders created")
             .register(meterRegistry);
+        caseFolderUpdatedCounter = Counter.builder("casefolderupdated")
+            .description("Number of case folders updated")
+            .register(meterRegistry);
+        caseFolderDeletedCounter = Counter.builder("casefolderdeleted")
+            .description("Number of case folders deleted")
+            .register(meterRegistry);
     }
+
+    @Override
+    public void incrementCaseFolderCreatedCounter() {
+        caseFolderCreatedCounter.increment();
+    }
+
+    // ...
+}
 ----
 
 De este modo cada vez que se crea un expediente, se incrementa el contador `casefoldercreated` y el endpoint de prometheus registrará esta métrica devolviendo:
@@ -465,6 +616,22 @@ De este modo cada vez que se crea un expediente, se incrementa el contador `case
 # TYPE casefoldercreated_total counter
 casefoldercreated_total 1.0
 ----
+
+== IAM
+
+En este ejemplo se ha utilizado Keycloak como proveedor de identidad (IAM) para gestionar la autenticación y autorización de los usuarios. Dentro del docker-compose se levanta una instancia de Keycloak sin configuración previa.
+
+Tendremos que acceder a la consola de administración de Keycloak en `http://localhost:8090/` y crear un realm llamado `sample`.
+
+Una vez creado el realm debemos crear un cliente llamado `sample-client` con los siguientes ajustes con "Client authentication enabled" y "Authorization enabled".
+
+image::./images/keycloak-client.png[]
+
+Después crearemos los roles utilizados por este ejemplo:
+
+image::./images/keycloak-roles.png[]
+
+Y finalmente crearemos dos usuarios, uno con el rol de manager y otro sólamente con los roles de _reader/writer_.
 
 == Sonar
 
@@ -478,6 +645,7 @@ Para ejecutar el análisis de SonarQube deberemos crear un token en nuestra inst
 
 - link:https://spring.io/projects/spring-boot[Spring Boot]
 - link:https://spring.io/projects/spring-cloud-stream[Spring Cloud Stream]
+- link:https://spring.io/projects/spring-cloud-openfeign[Spring Cloud OpenFeign]
 - link:https://8thlight.com/blog/uncle-bob/2012/08/13/the-clean-architecture.html[Clean Architecture]
 - link:https://mapstruct.org/[MapStruct]
 - link:https://github.com/jirutka/rsql-parser[RSQL Parser]

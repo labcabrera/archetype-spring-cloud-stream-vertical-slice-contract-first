@@ -21,7 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.labcabrera.sample.archetype.casefolder.infrastructure.persistence.jpa.mappers.CaseFolderMapper;
+import org.labcabrera.sample.archetype.casefolder.infrastructure.persistence.jpa.mappers.CaseFolderEntityMapper;
 
 import cz.jirutka.rsql.parser.RSQLParser;
 import cz.jirutka.rsql.parser.ast.Node;
@@ -34,8 +34,7 @@ import lombok.RequiredArgsConstructor;
 public class CaseFolderRepositoryJpaAdapter implements CaseFolderRepository {
 
     private final CaseFolderJpaRepository jpaRepository;
-    private final CaseFolderMapper mapper;
-    private final CaseFolderMerger caseFolderMerger;
+    private final CaseFolderEntityMapper mapper;
     private final RSQLParser rsqlParser;
 
     @Override
@@ -87,13 +86,13 @@ public class CaseFolderRepositoryJpaAdapter implements CaseFolderRepository {
 
     @Override
     @Transactional
-    @CachePut(value = "caseFolder", key = "#caseFolder.id")
-    public CaseFolder update(CaseFolder caseFolder) {
-        var current = jpaRepository.findById(caseFolder.getId())
-            .orElseThrow(() -> new BadRequestException("Case folder not found with id " + caseFolder.getId()));
-        boolean modified = caseFolderMerger.mergeChanges(current, caseFolder);
+    @CachePut(value = "caseFolder", key = "#caseFolderId")
+    public CaseFolder update(String caseFolderId, CaseFolder caseFolder) {
+        var current = jpaRepository.findById(caseFolderId)
+            .orElseThrow(() -> new BadRequestException("Case folder not found with id " + caseFolderId));
+        boolean modified = current.merge(caseFolder);
         if (!modified) {
-            throw new NotModifiedException("case-folder.msg.err.not-modified", caseFolder.getId());
+            throw new NotModifiedException("case-folder.msg.err.not-modified", caseFolderId);
         }
         var savedEntity = jpaRepository.save(current);
         return mapper.toDomain(savedEntity);
