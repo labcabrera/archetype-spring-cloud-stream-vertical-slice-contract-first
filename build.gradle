@@ -18,6 +18,10 @@ ext {
 	springCloudVersion = '2025.1.0'
 	rsqlParserVersion = '2.1.0'
 	mapstructVersion = '1.5.5.Final'
+	feignVersion = '13.5'
+	feignFormVersion = '3.8.0'
+	scribejavaVersion = '8.0.0'
+	migbase64Version = '2.2'
 }
 
 java {
@@ -51,23 +55,22 @@ dependencies {
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
 	implementation "net.logstash.logback:logstash-logback-encoder:${logstashLogbackVersion}"
+
 	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
 	implementation "cz.jirutka.rsql:rsql-parser:${rsqlParserVersion}"
 	implementation "org.mapstruct:mapstruct:${mapstructVersion}"
 	implementation 'io.github.resilience4j:resilience4j-spring-boot3'
 
 	// Dependencies required by the generated OpenAPI Feign client
-	implementation "io.github.openfeign:feign-core:13.5"
-	implementation "io.github.openfeign:feign-jackson:13.5"
-	implementation "io.github.openfeign:feign-slf4j:13.5"
-	implementation "io.github.openfeign:feign-okhttp:13.5"
-	implementation "io.github.openfeign.form:feign-form:3.8.0"
+	implementation "io.github.openfeign:feign-core:${feignVersion}"
+	implementation "io.github.openfeign:feign-jackson:${feignVersion}"
+	implementation "io.github.openfeign:feign-slf4j:${feignVersion}"
+	implementation "io.github.openfeign:feign-okhttp:${feignVersion}"
+	implementation "io.github.openfeign.form:feign-form:${feignFormVersion}"
 
 	// Dependencies required by generated OAuth helper classes
-	implementation "com.github.scribejava:scribejava-core:8.0.0"
-	implementation "com.brsanthu:migbase64:2.2"
-
-	implementation "org.webjars:swagger-ui:4.15.5"
+	implementation "com.github.scribejava:scribejava-core:${scribejavaVersion}"
+	implementation "com.brsanthu:migbase64:${migbase64Version}"
 
 	runtimeOnly 'com.h2database:h2'
 	runtimeOnly 'org.postgresql:postgresql'
