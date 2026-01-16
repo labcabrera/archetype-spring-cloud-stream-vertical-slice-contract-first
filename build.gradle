@@ -8,7 +8,6 @@ plugins {
 }
 
 group = 'org.labcabrera.sample'
-version = '0.1.0-SNAPSHOT'
 description = 'Archetype for Spring Boot using Spring Cloud Stream'
 
 ext {

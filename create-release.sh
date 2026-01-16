@@ -55,6 +55,28 @@ git pull --ff-only origin develop
 echo "Starting git-flow release: $VERSION"
 git flow release start "$VERSION"
 
+# Update gradle.properties on the release branch so the release contains the bumped version
+REPO_ROOT=$(git rev-parse --show-toplevel)
+GRADLE_PROPS_FILE="$REPO_ROOT/gradle.properties"
+echo "Updating $GRADLE_PROPS_FILE with version $VERSION"
+if [ -f "$GRADLE_PROPS_FILE" ]; then
+	if grep -qE '^version\s*=' "$GRADLE_PROPS_FILE"; then
+		sed -i -E "s/^version\s*=.*/version=${VERSION}/" "$GRADLE_PROPS_FILE"
+	else
+		echo "version=${VERSION}" >> "$GRADLE_PROPS_FILE"
+	fi
+else
+	echo "version=${VERSION}" > "$GRADLE_PROPS_FILE"
+fi
+
+# Commit the change only if there are modifications
+if git diff --quiet --exit-code -- "$GRADLE_PROPS_FILE"; then
+	echo "No changes to commit in $GRADLE_PROPS_FILE"
+else
+	git add "$GRADLE_PROPS_FILE"
+	git commit -m "Bump version to $VERSION"
+fi
+
 RELEASE_BRANCH="release/$VERSION"
 echo "Pushing release branch to origin: $RELEASE_BRANCH"
 git push -u origin "$RELEASE_BRANCH"
