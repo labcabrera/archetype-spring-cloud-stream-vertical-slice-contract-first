@@ -6,6 +6,9 @@ import org.springframework.stereotype.Component;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 
+/**
+ * Adapter for case folder metrics using Micrometer.
+ */
 @Component
 public class CaseFolderMetricAdapter implements CaseFolderMetricPort {
 

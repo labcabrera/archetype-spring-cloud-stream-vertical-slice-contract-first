@@ -30,7 +30,6 @@ import lombok.RequiredArgsConstructor;
 @Component
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-@SuppressWarnings("null")
 public class CaseFolderRepositoryJpaAdapter implements CaseFolderRepository {
 
     private final CaseFolderJpaRepository jpaRepository;

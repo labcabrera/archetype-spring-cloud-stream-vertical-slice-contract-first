@@ -2,6 +2,7 @@ package org.labcabrera.sample.archetype.casefolder.domain;
 
 import java.util.Optional;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +24,7 @@ public class UserInfo {
     @NotNull
     private String firstSurname;
 
+    @Nullable
     private Optional<String> lastSurname;
 
     @NotNull

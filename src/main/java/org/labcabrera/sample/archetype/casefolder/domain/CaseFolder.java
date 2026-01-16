@@ -10,6 +10,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Domain model representing a case folder.
+ * 
+ * A CaseFolder represents a case file associated with a user. A case file will be
+ * associated with different procedures (CaseSteps).
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
