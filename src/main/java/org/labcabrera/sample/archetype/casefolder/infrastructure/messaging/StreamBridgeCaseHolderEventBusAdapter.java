@@ -1,4 +1,4 @@
-package org.labcabrera.sample.archetype.casefolder.infrastructure.messaging.kafka;
+package org.labcabrera.sample.archetype.casefolder.infrastructure.messaging;
 
 import org.labcabrera.sample.archetype.casefolder.application.ports.CaseFolderEventBusPort;
 import org.labcabrera.sample.archetype.casefolder.domain.events.CaseFolderCreatedEvent;
@@ -11,13 +11,17 @@ import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Implementation of {@link CaseFolderEventBusPort} based on
+ * {@link StreamBridgeEventBusAdapter}.
+ */
 @Service
 @Slf4j
-public class KafkaCaseHolderEventBusAdapter
+public class StreamBridgeCaseHolderEventBusAdapter
     extends StreamBridgeEventBusAdapter
     implements CaseFolderEventBusPort {
 
-    public KafkaCaseHolderEventBusAdapter(StreamBridge streamBridge, SecurityPort securityPort) {
+    public StreamBridgeCaseHolderEventBusAdapter(StreamBridge streamBridge, SecurityPort securityPort) {
         super(streamBridge, securityPort);
     }
 

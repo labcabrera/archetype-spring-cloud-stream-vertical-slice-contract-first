@@ -1,4 +1,4 @@
-package org.labcabrera.sample.archetype.casestep.infrastructure.messaging.kafka;
+package org.labcabrera.sample.archetype.casestep.infrastructure.messaging;
 
 import org.labcabrera.sample.archetype.casestep.application.ports.CaseStepEventBusPort;
 import org.labcabrera.sample.archetype.casestep.domain.events.CaseStepCreatedEvent;
@@ -7,12 +7,16 @@ import org.labcabrera.sample.archetype.shared.infrastructure.messaging.kafka.Str
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Component;
 
+/**
+ * Implementation of {@link CaseStepEventBusPort} based on
+ * {@link StreamBridgeEventBusAdapter}.
+ */
 @Component
-public class KafkaCaseStepEventBusAdapter
+public class StreamBridgeCaseStepEventBusAdapter
     extends StreamBridgeEventBusAdapter
     implements CaseStepEventBusPort {
 
-    public KafkaCaseStepEventBusAdapter(StreamBridge streamBridge, SecurityPort securityPort) {
+    public StreamBridgeCaseStepEventBusAdapter(StreamBridge streamBridge, SecurityPort securityPort) {
         super(streamBridge, securityPort);
     }
 

@@ -7,7 +7,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 
 /**
- * Adapter for case folder metrics using Micrometer.
+ * Implementation of {@link CaseFolderMetricPort} based on Micrometer.
  */
 @Component
 public class CaseFolderMetricAdapter implements CaseFolderMetricPort {

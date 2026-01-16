@@ -9,6 +9,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * Basic user information associated with a case folder.
+ */
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,6 +33,10 @@ public class UserInfo {
     @NotNull
     private IdCard idCard;
 
+    /**
+     * Normalize user info fields (uppercase).
+     * @return
+     */
     public UserInfo normalize() {
         name = name.toUpperCase();
         firstSurname = firstSurname.toUpperCase();

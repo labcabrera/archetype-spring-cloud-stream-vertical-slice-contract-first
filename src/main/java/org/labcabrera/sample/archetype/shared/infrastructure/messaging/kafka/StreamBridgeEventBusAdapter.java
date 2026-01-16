@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import org.labcabrera.sample.archetype.shared.application.SecurityPort;
+import org.labcabrera.sample.archetype.shared.domain.exceptions.EventNotificationException;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
@@ -11,9 +12,11 @@ import org.springframework.messaging.support.MessageBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Base class for adapters that generate events through StreamBridge with custom headers.
+ */
 @RequiredArgsConstructor
 @Slf4j
-@SuppressWarnings("null")
 public abstract class StreamBridgeEventBusAdapter {
 
     protected final StreamBridge streamBridge;
@@ -35,7 +38,7 @@ public abstract class StreamBridgeEventBusAdapter {
             streamBridge.send(binding, message);
         }
         catch (Exception ex) {
-            log.error("Failed to publish {}", event.getClass().getSimpleName(), ex);
+            throw new EventNotificationException("msg.err.event-notification", ex);
         }
     }
 
