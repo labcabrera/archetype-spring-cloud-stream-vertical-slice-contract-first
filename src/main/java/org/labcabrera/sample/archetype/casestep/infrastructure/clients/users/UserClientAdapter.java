@@ -12,6 +12,10 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Implementation of {@link UserClientPort} using the OpenAPI generated {@link UsersApi}
+ * client.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j

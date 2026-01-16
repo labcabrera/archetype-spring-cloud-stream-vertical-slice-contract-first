@@ -13,7 +13,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
-public class JacksonCompatibilityConfig {
+public class JacksonConfiguration {
 
     @Bean
     @Primary
@@ -42,4 +42,5 @@ public class JacksonCompatibilityConfig {
         objectMapper.activateDefaultTyping(ptv, DefaultTyping.NON_FINAL, As.PROPERTY);
         return objectMapper;
     }
+
 }

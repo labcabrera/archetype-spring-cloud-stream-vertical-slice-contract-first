@@ -50,15 +50,17 @@ dependencies {
 	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 	implementation 'org.springframework.cloud:spring-cloud-stream'
 	implementation 'org.springframework.cloud:spring-cloud-stream-binder-kafka'
+
+	implementation 'io.github.resilience4j:resilience4j-spring-boot3'
+	implementation "net.logstash.logback:logstash-logback-encoder:${logstashLogbackVersion}"
+	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
+	implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+	implementation "cz.jirutka.rsql:rsql-parser:${rsqlParserVersion}"
+
+	// TODO update to Jackson 3 when feign supports it
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
-	implementation "net.logstash.logback:logstash-logback-encoder:${logstashLogbackVersion}"
-
-	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
-	implementation "cz.jirutka.rsql:rsql-parser:${rsqlParserVersion}"
-	implementation "org.mapstruct:mapstruct:${mapstructVersion}"
-	implementation 'io.github.resilience4j:resilience4j-spring-boot3'
 
 	// Dependencies required by the generated OpenAPI Feign client
 	implementation "io.github.openfeign:feign-core:${feignVersion}"

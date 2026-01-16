@@ -7,6 +7,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Domain model representing a case step.
+ * 
+ * A CaseStep represents a procedure associated with a case file (CaseFolder).
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
