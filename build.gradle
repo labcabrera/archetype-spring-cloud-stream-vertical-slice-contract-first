@@ -1,9 +1,9 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '4.0.1'
+	id 'org.springframework.boot' version '4.0.3'
 	id 'io.spring.dependency-management' version '1.1.7'
 	//TODO pendiente de version compatible con Spring Boot 4 que aun esta en desarrollo
-	id 'org.openapi.generator' version '7.18.0'
+	id 'org.openapi.generator' version '7.20.0'
 	id 'org.sonarqube' version '6.0.1.5171'
 	id 'jacoco'
 }
@@ -86,6 +86,7 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testAnnotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
 }
+
 openApiGenerate {
     generatorName = "spring"
     inputSpec = "$rootDir/src/main/resources/api-definition.yaml"
