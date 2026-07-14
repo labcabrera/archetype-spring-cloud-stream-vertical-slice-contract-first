@@ -7,8 +7,6 @@ services:
       POSTGRES_DB: keycloak
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
-    networks:
-      - sample-network
     volumes:
       - sample-postgres-data:/var/lib/postgresql/data
 
@@ -20,8 +18,6 @@ services:
       - "6379:6379"
     volumes:
       - sample-redis-data:/data
-    networks:
-      - sample-network
 
   sample-keycloak:
     image: quay.io/keycloak/keycloak:26.3
@@ -46,8 +42,6 @@ services:
       KC_LOG_LEVEL: INFO
     volumes:
       - sample-keycloak-data:/opt/keycloak/data
-    networks:
-      - sample-network
 
   sample-sonarqube-db:
     image: postgres:16
@@ -57,8 +51,6 @@ services:
       POSTGRES_DB: sonar
       POSTGRES_USER: sonar
       POSTGRES_PASSWORD: sonar
-    networks:
-      - sample-network
     volumes:
       - sample-sonarqube-db-data:/var/lib/postgresql/data
 
@@ -84,8 +76,6 @@ services:
       - sample-sonarqube-data:/opt/sonarqube/data
       - sample-sonarqube-logs:/opt/sonarqube/logs
       - sample-sonarqube-extensions:/opt/sonarqube/extensions
-    networks:
-      - sample-network
 
   sample-kafka:
     image: confluentinc/cp-kafka:7.4.0
@@ -114,10 +104,8 @@ services:
       CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
     volumes:
       - sample-kafka-data:/var/lib/kafka/data
-    networks:
-      - sample-network
 
-  kafka-ui:
+  sample-kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: sample-kafka-ui
     depends_on:
@@ -131,8 +119,6 @@ services:
       AUTH_TYPE: "LOGIN_FORM"
       SPRING_SECURITY_USER_NAME: admin
       SPRING_SECURITY_USER_PASSWORD: admin
-    networks:
-      - sample-network
 
 volumes:
   sample-mongo-data:
@@ -153,7 +139,3 @@ volumes:
     driver: local
   sample-sonarqube-extensions:
     driver: local
-
-networks:
-  sample-network:
-    external: true

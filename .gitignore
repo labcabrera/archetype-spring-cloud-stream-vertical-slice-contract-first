@@ -1,6 +1,5 @@
-.gradle
-.vscode
-build
-out
-AGENTS.md
-TODO.txt
+.gradle/
+.vscode/
+bin/
+build/
+out/

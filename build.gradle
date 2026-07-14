@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '4.0.3'
+	id 'org.springframework.boot' version '4.1.0'
 	id 'io.spring.dependency-management' version '1.1.7'
 	//TODO pendiente de version compatible con Spring Boot 4 que aun esta en desarrollo
 	id 'org.openapi.generator' version '7.20.0'
@@ -12,10 +12,10 @@ group = 'org.labcabrera.sample'
 description = 'Archetype for Spring Boot using Spring Cloud Stream'
 
 ext {
+	springCloudVersion = '2025.1.2'
 	logstashLogbackVersion = '7.4'
 	springdocVersion = '3.0.1'
 	swaggerAnnotationsVersion = '2.2.13'
-	springCloudVersion = '2025.1.0'
 	rsqlParserVersion = '2.1.0'
 	mapstructVersion = '1.5.5.Final'
 	feignVersion = '13.5'
